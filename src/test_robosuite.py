@@ -42,12 +42,9 @@ world.worldbody.append(sphere)
 
 model = world.get_model(mode="mujoco_py")
 
-ipdb.set_trace()
-
 # How can we set initial velocity of the ball?
 # In raw mujoco you can set the qvel property of mjData object.
 #sphere.set('qvel', '0.5 0.5 0')
-print(model.bodies)
 
 from mujoco_py import MjSim, MjViewer
 
