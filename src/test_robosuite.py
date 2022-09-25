@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import ipdb
+import math
 
 from robosuite.models import MujocoWorldBase
 
@@ -20,12 +21,19 @@ world.merge(mujoco_robot)
 world.option.attrib['gravity'] = '0 0 0'
 
 # Insert a ball
+BALL_MASS = 0.0027    # kg, official ping pong ball mass
+BALL_RADIUS = 0.02    # m, a ping pong ball is 40mm in diameter = 20mm radius
+BALL_VELOCITY = -0.2  # m/s, chosen to meet our simulation goals
+BALL_VOLUME = BALL_RADIUS**3 * math.pi  # m^3
+BALL_DENSITY = BALL_MASS / BALL_VOLUME  # kg/m^3
+SHOOTER_FORCE = BALL_VELOCITY * BALL_MASS / float(world.option.get('timestep')) # N
 from robosuite.models.objects import BallObject
 sphere = BallObject(
     name='ball',
-    size=[0.02],  # ping pong is 40mm diameter = 2cm radius
+    size=[BALL_RADIUS],
     rgba=[0, 0.5, 0.5, 1],
     solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
+    density=BALL_DENSITY,
     ).get_obj()
 sphere.set('pos', '0.5 0 1.0')  # table is something under z=1, so z=1 will be above the table
 world.worldbody.append(sphere)
@@ -34,7 +42,6 @@ world.worldbody.append(sphere)
 import xml.etree.ElementTree as ET
 sphere_shooter = ET.Element('general', attrib={'name': 'shooter', 'site': 'ball_default_site'})
 world.actuator.append(sphere_shooter)
-SHOOTER_FORCE = -2.
 
 # Convert the xml that robosuite has managed into a real mujoco object
 model = world.get_model(mode="mujoco_py")
