@@ -4,6 +4,9 @@ import ipdb
 import math
 
 from robosuite.models import MujocoWorldBase
+from robosuite.utils.mjcf_utils import array_to_string
+
+from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
 
 world = MujocoWorldBase()
 
@@ -24,8 +27,7 @@ from robosuite.models.objects import BallObject
 class Ball(BallObject):
     MASS = 0.0027    # kg, official ping pong ball = 2.7g
     RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
-    VELOCITY = -0.2  # m/s, chosen to meet our simulation goals
-    def __init__(self):
+    def __init__(self, trajectory):
         super().__init__(
             name='ball',
             size=[Ball.RADIUS],
@@ -33,18 +35,24 @@ class Ball(BallObject):
             solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
             density=self.density(),
             )
-        self.get_obj().set('pos', '0.5 0 1.0')  # table is something under z=1, so z=1 will be above the table
+        self.trajectory = trajectory
+        self.get_obj().set('pos', array_to_string(self.trajectory.origin))
     def volume(self):
         return Ball.RADIUS**3 * math.pi * 4./3.  # m^3
     def density(self):
         return Ball.MASS / self.volume()  # kg/m^3
     def create_shooter(self):
         import xml.etree.ElementTree as ET
-        return ET.Element('general', attrib={'name': 'shooter', 'site': 'ball_default_site', 'gear': '0.5 0.5 1 0 0 0'})
+        return ET.Element('general', attrib={'name': 'shooter', 'site': 'ball_default_site', 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
     def init_force(self):
-        return Ball.VELOCITY * Ball.MASS / float(world.option.get('timestep')) # N
+        return self.trajectory.speed * Ball.MASS / float(world.option.get('timestep')) # N
 
-ball = Ball()
+spawner = BallSpawner()
+spawner.src = BoxInSpace([5, 0, 2], None, 2, 4, 3)
+spawner.tgt = CircleInSpace((0,0,1), (1,0,0), (0,1,0), 1.*math.pi, 1.)
+spawner.spd = SpeedSpawner(1.0, 3.0)
+
+ball = Ball(spawner.random())
 world.worldbody.append(ball.get_obj())
 
 # Create the force the propels the ball to its initial velocity
