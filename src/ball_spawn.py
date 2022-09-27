@@ -117,9 +117,11 @@ class BallTrajectory():
         self.target_ = target
     @property
     def origin(self):
+        """Starting point in x/y/z space"""
         return self.origin_
     @property
     def velocity(self):
+        """Velocity vector with x/y/z components"""
         return self.velocity_
     @property
     def speed(self):
@@ -131,6 +133,7 @@ class BallTrajectory():
         return self.velocity_ / self.speed
     @property
     def target(self):
+        """Optional (can be None) destination of the ball in x/y/z space"""
         return self.target_
     def position(self, t):
         """Calculated position at time t"""
