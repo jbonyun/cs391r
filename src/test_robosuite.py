@@ -30,7 +30,7 @@ class Ball(BallObject):
     RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
     ball_count = 0   # global count of the number of Ball objects we have, so they can have unique names.
     def __init__(self, world, trajectory):
-        self.index = Ball.ball_count
+        self.index = Ball.ball_count  # Remember and update the global object count.
         Ball.ball_count = self.index + 1
         super().__init__(
             name='ball{}'.format(self.index),
@@ -40,18 +40,22 @@ class Ball(BallObject):
             density=self.density(),
             )
         self.trajectory = trajectory
-        self.get_obj().set('pos', array_to_string(self.trajectory.origin))
+        self.get_obj().set('pos', array_to_string(self.trajectory.origin))  # Set initial position.
         self.shooter = ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.index), 'site': 'ball{}_default_site'.format(self.index), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
-        self.actuator_id = len(world.actuator)
-        world.actuator.append(self.shooter)
-        world.worldbody.append(self.get_obj())
+        self.actuator_id = len(world.actuator)  # Assumes that assigne actuator id is where it appears in the xml list.
+        world.actuator.append(self.shooter)     # Add the shooter to the xml.
+        world.worldbody.append(self.get_obj())  # Add the ball object to the xml.
     def volume(self):
-        return Ball.RADIUS**3 * math.pi * 4./3.  # m^3
+        """Volume of the ball, m^3"""
+        return Ball.RADIUS**3 * math.pi * 4./3.
     def density(self):
-        return Ball.MASS / self.volume()  # kg/m^3
+        """Density of the ball, kg/m^3"""
+        return Ball.MASS / self.volume()
     def shooter_force(self):
-        return self.trajectory.speed * Ball.MASS / float(world.option.get('timestep')) # N
+        """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
+        return self.trajectory.speed * Ball.MASS / float(world.option.get('timestep'))
     def set_shooter_control(self, sim):
+        """Apply the shooter_force to the actuator that will push this ball"""
         sim.data.ctrl[self.actuator_id] = self.shooter_force()
 
 spawner = BallSpawner()
