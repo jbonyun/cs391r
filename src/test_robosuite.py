@@ -15,11 +15,24 @@ from robosuite.models.base import MujocoXML
 xml = MujocoXML('empty_space.xml')
 world.merge(xml)
 
+def remove_xml_element_named(root: ET.Element, name: str):
+    """Recursively search an xml Element object and remove any children named `name`"""
+    for child in root:
+        if child.get('name') == name:
+            root.remove(child)
+        else:
+            remove_xml_element_named(child, name)
+
+
 # Put a robot in the world
 from robosuite.models.robots import IIWA
 mujoco_robot = IIWA()
 mujoco_robot.set_base_xpos([0, 0, 0])  # Robot is at 0,0,0 in world coords.
+# Remove cameras that come bundled with the robot arm, because I don't want them.
+remove_xml_element_named(mujoco_robot.root, 'robot0_eye_in_hand')
+remove_xml_element_named(mujoco_robot.root, 'robot0_robotview')
 world.merge(mujoco_robot)
+
 
 # Disable gravity by setting it to zero acceleration in x/y/z
 world.option.attrib['gravity'] = '0 0 0'
