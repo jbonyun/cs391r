@@ -1,0 +1,17 @@
+<mujoco model="bat_one">
+    <worldbody>
+        <body name = "bat_one_gripper" pos="0 0 0.15" quat="0 0 0 1" >
+        <site name="ft_frame" pos="0 0 0" size="0.01 0.01 0.01" rgba="1 0 0 1" type="sphere" group="1" />
+        <!-- This site was added for visualization. -->
+        <site name="grip_site" pos="0 0 -0.1775" size="0.01 0.01 0.01" rgba="1 0 0 0.5" type="sphere" group="1"/>
+        <!-- This site was added for visualization. -->
+        <site name="grip_site_cylinder" pos="0 0 0.1399" size="0.005 10" rgba="0 1 0 0.3" type="cylinder" group="1"/>
+        <geom name="bat" size="0.035 0.175" type="cylinder" />
+        <geom name="bat_one" size="0.035 0.175" type="cylinder" contype="0" conaffinity="0" group="1" />
+        </body>
+    </worldbody>
+    <sensor>
+        <force name="force_ee" site="ft_frame"/>
+        <torque name="torque_ee" site="ft_frame"/>
+    </sensor>
+</mujoco>
