@@ -122,6 +122,14 @@ class BallTrajectory():
     def velocity(self):
         return self.velocity_
     @property
+    def speed(self):
+        """Scalar speed, without direction"""
+        return np.linalg.norm(self.velocity_)
+    @property
+    def velocity_vector(self):
+        """Normalized velocity vector, with unit length"""
+        return self.velocity_ / self.speed
+    @property
     def target(self):
         return self.target_
     def position(self, t):
