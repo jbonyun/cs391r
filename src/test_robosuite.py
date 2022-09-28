@@ -2,6 +2,7 @@
 
 import ipdb
 import math
+import numpy as np
 import xml.etree.ElementTree as ET
 
 from robosuite.models import MujocoWorldBase
@@ -71,9 +72,9 @@ class Ball(BallObject):
     def shooter_force(self):
         """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
         return self.trajectory.speed * Ball.MASS / float(world.option.get('timestep'))
-    def set_shooter_control(self, sim):
+    def set_shooter_control(self, sim, set_to=None):
         """Apply the shooter_force to the actuator that will push this ball"""
-        sim.data.ctrl[self.actuator_id] = self.shooter_force()
+        sim.data.ctrl[self.actuator_id] = (self.shooter_force() if set_to is None else set_to)
 
 spawner = BallSpawner()
 spawner.src = BoxInSpace([5, 0, 2], None, 2, 4, 3)
@@ -94,11 +95,15 @@ sim = MjSim(model)
 viewer = MjViewer(sim)
 viewer.vopt.geomgroup[0] = 0 # disable visualization of collision mesh
 
+#ipdb.set_trace()
+
 for i in range(10000):
-  if sim.data.ctrl is not None: sim.data.ctrl[:] = 0  # I think this makes all control efforts 0
-  if i == 0:
-    # Set initial forces to create starting velocities. Only happens on frame 0.
+    # Choose a constant joint effort for each robot joint at random. Only on first frame.
+    if i == 0:
+        for joint_i in range(7):
+            sim.data.ctrl[sim.model.actuator_name2id('robot0_torq_j{}'.format(joint_i+1))] = np.random.normal(0, 0.2)
+    # Set ball actuation force. Zero except for first frame.
     for ball in balls:
-        ball.set_shooter_control(sim)
-  sim.step()
-  viewer.render()
+        ball.set_shooter_control(sim, ball.shooter_force() if i == 0 else 0.)
+    sim.step()
+    viewer.render()
