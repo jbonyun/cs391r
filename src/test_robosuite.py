@@ -7,6 +7,7 @@ import xml.etree.ElementTree as ET
 from robosuite.models import MujocoWorldBase
 from robosuite.utils.mjcf_utils import array_to_string
 
+from gripper import BatOneGripper
 from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
 
 world = MujocoWorldBase()
@@ -31,6 +32,9 @@ mujoco_robot.set_base_xpos([0, 0, 0])  # Robot is at 0,0,0 in world coords.
 # Remove cameras that come bundled with the robot arm, because I don't want them.
 remove_xml_element_named(mujoco_robot.root, 'robot0_eye_in_hand')
 remove_xml_element_named(mujoco_robot.root, 'robot0_robotview')
+# Add a gripper
+gripper = BatOneGripper()
+mujoco_robot.add_gripper(gripper)
 world.merge(mujoco_robot)
 
 
