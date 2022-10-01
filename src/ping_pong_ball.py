@@ -18,6 +18,7 @@ class PingPongBall(BallObject):
             density=self.density(),
             )
         self.trajectory = trajectory
+        print('Ball traj', self.trajectory)
         self.get_obj().set('pos', array_to_string(self.trajectory.origin))  # Set initial position.
         self.timestep = timestep
     def volume(self):
