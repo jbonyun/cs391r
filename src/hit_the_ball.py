@@ -43,7 +43,6 @@ for i_episode in range(NUM_EPISODES):
             #action = np.random.uniform(-0.05, 0.05, (6,))
             action = np.zeros((6,))  # What does zero action mean?
         env.ball.set_shooter_control(env.sim, None if i_step == 0 else 0.)
-        print('action into step', action)
         print('env.sim.data.ctrl going into step', np.round(env.sim.data.ctrl, 3))
         #ipdb.set_trace()
         # Execute the action and see result.
