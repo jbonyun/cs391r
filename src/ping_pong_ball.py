@@ -22,6 +22,7 @@ class PingPongBall(BallObject):
         print('Ball traj', self.trajectory)
         self.get_obj().set('pos', array_to_string(self.trajectory.origin))  # Set initial position.
         self.timestep = timestep
+        self.actuator_id = None
     def volume(self):
         """Volume of the ball, m^3"""
         return PingPongBall.RADIUS**3 * math.pi * 4./3.
@@ -36,4 +37,6 @@ class PingPongBall(BallObject):
         return self.trajectory.speed * PingPongBall.MASS / self.timestep
     def set_shooter_control(self, sim, set_to=None):
         """Apply the shooter_force to the actuator that will push this ball"""
+        if self.actuator_id is None:
+            raise Exception('You didnt set the actuator_id in the PingPongBall')
         sim.data.ctrl[self.actuator_id] = (self.shooter_force() if set_to is None else set_to)
