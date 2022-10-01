@@ -265,8 +265,6 @@ class HitBallEnv(SingleArmEnv):
         from robosuite.models.base import MujocoXML
         xml = MujocoXML('empty_space.xml')
         mujoco_arena.merge(xml)
-        # Disable gravity by setting it to zero acceleration in x/y/z
-        mujoco_arena.option.attrib['gravity'] = '0 0 0'
         #mujoco_arena = SpaceArena()
 
         super()._load_model()
@@ -299,7 +297,8 @@ class HitBallEnv(SingleArmEnv):
         )
 
         # Tweak it in ways that can't be done before the merging done in Task class.
-        self.model.option.attrib['gravity'] = '0 0 0'
+        # Disable gravity by setting it to zero acceleration in x/y/z
+        self.model.root.find('option').attrib['gravity'] = '0 0 0'
         self.model.actuator.append(self.ball.create_shooter())
         # DEBUGING: this is what will be instantiated by the mujoco, so a good time to print it out to review
         #for l in self.model.get_xml().split('\n'): print(l)
