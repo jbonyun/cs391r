@@ -37,13 +37,12 @@ for i_episode in range(NUM_EPISODES):
     while True:
         # Update visuals (and maybe the off-screen render used for control observations?)
         env.render()
-        print('qvel', np.round(env.sim.get_state().qvel, 2))
+        print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 2))
         # Choose an action. I'm doing this only on the first timestep and then repeating forever.
         if i_step == 0:
             #action = np.random.uniform(-0.05, 0.05, (6,))
             action = np.zeros((6,))  # What does zero action mean?
         env.ball.set_shooter_control(env.sim, None if i_step == 0 else 0.)
-        print('env.sim.data.ctrl going into step', np.round(env.sim.data.ctrl, 3))
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
