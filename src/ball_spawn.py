@@ -4,7 +4,6 @@ import math
 import numpy as np
 import random
 
-import matplotlib.pyplot as plt  # For testing and visualizing
 
 
 class BoxInSpace():
@@ -248,5 +247,6 @@ def test_spawner():
     
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt  # For testing and visualizing
     #test_boxinspace()
     test_spawner()
