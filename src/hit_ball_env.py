@@ -279,14 +279,14 @@ class HitBallEnv(SingleArmEnv):
             self.placement_initializer.add_objects(self.ball)
         else:
             self.placement_initializer = UniformRandomSampler(
-                name="ObjectSampler",
+                name="BallSampler",
                 mujoco_objects=self.ball,
-                x_range=[-0.08, 0.08],
-                y_range=[-0.08, 0.08],
+                x_range=[0,0], #[-0.00, 0.08],
+                y_range=[0,0], #[-0.08, 0.08],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                z_offset=0.01,
+                z_offset=0., #0.01,
                 reference_pos=self.ball.trajectory.origin  # Center around the spawner's chosen place
             )
 
