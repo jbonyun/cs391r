@@ -2,12 +2,13 @@ import math
 import xml.etree.ElementTree as ET
 from robosuite.models.objects import BallObject
 from robosuite.utils.mjcf_utils import array_to_string
+from ball_spawn import BallTrajectory
 
 class PingPongBall(BallObject):
     MASS = 0.0027    # kg, official ping pong ball = 2.7g
     RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
     ball_count = 0   # global count of the number of Ball objects we have, so they can have unique names.
-    def __init__(self, trajectory, timestep):
+    def __init__(self, trajectory: BallTrajectory, timestep):
         self.index = PingPongBall.ball_count  # Remember and update the global object count.
         PingPongBall.ball_count = self.index + 1
         super().__init__(
