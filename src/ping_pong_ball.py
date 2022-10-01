@@ -39,4 +39,6 @@ class PingPongBall(BallObject):
         """Apply the shooter_force to the actuator that will push this ball"""
         if self.actuator_id is None:
             raise Exception('You didnt set the actuator_id in the PingPongBall')
+        if set_to != 0.0:
+            print('Shooter with force', self.shooter_force())
         sim.data.ctrl[self.actuator_id] = (self.shooter_force() if set_to is None else set_to)
