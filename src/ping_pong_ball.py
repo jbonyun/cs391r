@@ -29,10 +29,8 @@ class PingPongBall(BallObject):
         """Density of the ball, kg/m^3"""
         return PingPongBall.MASS / self.volume()
     def create_shooter(self):
-        shooter_xml = ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.index), 'site': 'ball{}_default_site'.format(self.index), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
         # Needs to be appended to the world's actuators list
-        # TODO: somehow we need to find our self.actuator_id so we can activate it
-        return shooter_xml
+        return ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.index), 'joint': 'ball{}_joint0'.format(self.index), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
     def shooter_force(self):
         """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
         return self.trajectory.speed * PingPongBall.MASS / self.timestep
