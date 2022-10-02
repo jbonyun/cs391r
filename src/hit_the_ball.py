@@ -14,6 +14,7 @@ env = HitBallEnv(
         gripper_types = ['BatOneGripper'],
         #initialization_noise = None,
         use_camera_obs = False,  # True means controller will be given camera inputs
+        reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = True,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = False,    # Required if you want camera observations for the controller.
         render_camera = None,   # name of camera to render (None = default which the user can control)
