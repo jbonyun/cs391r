@@ -64,8 +64,7 @@ class HitBallEnv(SingleArmEnv):
 
         use_camera_obs (bool): if True, every observation includes rendered image(s)
 
-        use_object_obs (bool): if True, include object (cube) information in
-            the observation.
+        use_object_obs (bool): if True, include object information in the observation.
 
         reward_scale (None or float): Scales the normalized reward function by the amount specified.
             If None, environment reward remains unnormalized
@@ -246,7 +245,7 @@ class HitBallEnv(SingleArmEnv):
                 - (float): reward proximity
                 - (float): reward for contact
         """
-        # reaching is successful when the gripper site is close to the center of the cube
+        # reaching is successful when the gripper site is close to the ball
         ball_pos = self.sim.data.body_xpos[self.ball_body_id]
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
@@ -347,11 +346,12 @@ class HitBallEnv(SingleArmEnv):
             pf = self.robots[0].robot_model.naming_prefix
             modality = "object"
 
-            # position and rotation of the first cube
+            # position of the ball
             @sensor(modality=modality)
             def ball_pos(obs_cache):
                 return np.array(self.sim.data.body_xpos[self.ball_body_id])
 
+            # distance from gripper to ball
             @sensor(modality=modality)
             def gripper_to_ball(obs_cache):
                 return (
@@ -385,7 +385,7 @@ class HitBallEnv(SingleArmEnv):
 
     def visualize(self, vis_settings):
         """
-        In addition to super call, visualize gripper site proportional to the distance to the cube.
+        In addition to super call, visualize gripper site proportional to the distance to the ball.
 
         Args:
             vis_settings (dict): Visualization keywords mapped to T/F, determining whether that specific
@@ -395,6 +395,6 @@ class HitBallEnv(SingleArmEnv):
         # Run superclass method first
         super().visualize(vis_settings=vis_settings)
 
-        # Color the gripper visualization site according to its distance to the cube
+        # Color the gripper visualization site according to its distance to the ball
         if vis_settings["grippers"]:
-            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.cubeA)
+            self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.ball)
