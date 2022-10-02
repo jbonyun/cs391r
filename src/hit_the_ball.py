@@ -47,6 +47,8 @@ for i_episode in range(NUM_EPISODES):
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
+        if reward > 0.1:
+            print('Big reward!', np.round(reward,2))
         # Stop if done.
         if done:
             print("Episode finished after {} timesteps".format(i_step + 1))
