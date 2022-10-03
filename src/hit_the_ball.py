@@ -38,7 +38,9 @@ for i_episode in range(NUM_EPISODES):
     while True:
         # Update visuals (and maybe the off-screen render used for control observations?)
         env.render()
-        print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 2))
+        if i_step % 30 == 1:
+            print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
+            print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
         # Choose an action. I'm doing this only on the first timestep and then repeating forever.
         if i_step == 0:
             #action = np.random.uniform(-0.05, 0.05, (6,))
