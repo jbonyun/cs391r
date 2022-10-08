@@ -1,6 +1,6 @@
 import gym
 import os
-from stable_baselines3 import PPO
+from sb3_contrib import RecurrentPPO
 from stable_baselines3.common import results_plotter
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.results_plotter import load_results, ts2xy
@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from stable_baselines_helpers import *
 
 # main hyper parameter
-training_steps = 1e4
+training_steps = 1e6
 
 # create log dir
 log_dir = "/tmp/gym/"
@@ -22,12 +22,9 @@ os.makedirs(log_dir, exist_ok=True)
 
 # There already exists an environment generator that will make and wrap atari environments correctly.
 env = make_atari_env('PongNoFrameskip-v4', n_envs=4, seed=0)
-# Stack 4 frames in time - so no recurrence needed even though its images
-env = VecFrameStack(env, n_stack=4)
-
 
 # create alg and learn it for 10k steps
-model = PPO("CnnPolicy", env, verbose=1) error # Todo make this PPORecurrent from sb3-contrib
+model = RecurrentPPO("MlpLstmPolicy", env, verbose=1) #  Todo make this PPORecurrent from sb3-contrib
 model.learn(total_timesteps=training_steps)
 
 # Show the learned policy on the env

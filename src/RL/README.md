@@ -3,3 +3,4 @@ pip install stable-baselines3[extra]
 - installs gym, pytorch for you
 pip install gym[atari]
 pip install autorom[accept-rom-license]
+pip install sb3-contrib
