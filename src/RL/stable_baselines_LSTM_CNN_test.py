@@ -21,6 +21,7 @@ log_dir = "/tmp/gym/"
 os.makedirs(log_dir, exist_ok=True)
 
 # There already exists an environment generator that will make and wrap atari environments correctly.
+# exchange this for our env
 env = make_atari_env('PongNoFrameskip-v4', n_envs=4, seed=0)
 
 # create alg and learn it for 10k steps

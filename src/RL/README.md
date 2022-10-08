@@ -4,3 +4,4 @@ pip install stable-baselines3[extra]
 pip install gym[atari]
 pip install autorom[accept-rom-license]
 pip install sb3-contrib
+- Installs the recurrent version of PPO
