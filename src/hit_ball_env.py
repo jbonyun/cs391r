@@ -20,6 +20,7 @@ GRIPPER_MAPPING['BatOneGripper'] = BatOneGripper
 
 from ping_pong_ball import PingPongBall
 from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
+from deterministic_sampler import DeterministicSampler
 
 
 
@@ -181,10 +182,15 @@ class HitBallEnv(SingleArmEnv):
         self.placement_initializer = placement_initializer
 
         self.spawner = BallSpawner()
-        #self.spawner.src = BoxInSpace([5, 0, 2], None, 2, 4, 3)  # I think this is a good "ping pong esque" location.
-        self.spawner.src = BoxInSpace([1.5, 0, 1], None, 0.1, 0.1, 0.1)  # Close in, for visualizing easier.
-        self.spawner.tgt = CircleInSpace((0,0,1), (1,0,0), (0,1,0), 1.*math.pi, 1.)  # Guess about where arm can reach.
-        self.spawner.spd = SpeedSpawner(1.0, 2.0)
+        use_random_spawn = True  # False means a deterministic point and path, for testing.
+        if use_random_spawn:
+            self.spawner.src = BoxInSpace([1.5, 0, 0], None, 0.1, 0.1, 0.1)  # Close in, for visualizing
+            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 1.0)
+            self.spawner.spd = SpeedSpawner(1.0, 2.0)
+        else:
+            self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
+            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+            self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
 
         super().__init__(
             robots=robots,
@@ -277,15 +283,10 @@ class HitBallEnv(SingleArmEnv):
             self.placement_initializer.reset()
             self.placement_initializer.add_objects(self.ball)
         else:
-            self.placement_initializer = UniformRandomSampler(
+            self.placement_initializer = DeterministicSampler(
                 name="BallSampler",
                 mujoco_objects=self.ball,
-                x_range=[0,0], #[-0.00, 0.08],
-                y_range=[0,0], #[-0.08, 0.08],
-                rotation=None,
-                ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
-                z_offset=0., #0.01,
                 reference_pos=self.ball.trajectory.origin  # Center around the spawner's chosen place
             )
 
