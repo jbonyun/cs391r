@@ -4,7 +4,6 @@ import math
 import numpy as np
 import random
 
-import matplotlib.pyplot as plt  # For testing and visualizing
 
 
 class BoxInSpace():
@@ -115,6 +114,8 @@ class BallTrajectory():
         self.origin_ = np.array(origin)
         self.velocity_ = np.array(velocity)
         self.target_ = target
+    def __str__(self):
+        return 'Or:' + str(np.round(self.origin_,2)) + ' Tg:' + (str(np.round(self.target_,2)) if self.target is not None else 'None') + ' Ve:' + str(np.round(self.velocity_, 2))
     @property
     def origin(self):
         """Starting point in x/y/z space"""
@@ -248,5 +249,6 @@ def test_spawner():
     
 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt  # For testing and visualizing
     #test_boxinspace()
     test_spawner()
