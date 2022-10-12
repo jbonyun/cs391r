@@ -1,7 +1,18 @@
 
+# virtualenv pieces
 share
 lib
 include
 bin
 pyvenv.cfg
+
+# directories with compiled/backups/checkpoints/etc
 __pycache__
+.ipynb_checkpoints
+
+# file types that are big and bad
+*.mp4
+*.gz
+*.tar.gz
+*.tgz
+*.zip
