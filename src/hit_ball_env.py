@@ -184,9 +184,9 @@ class HitBallEnv(SingleArmEnv):
         self.spawner = BallSpawner()
         use_random_spawn = True  # False means a deterministic point and path, for testing.
         if use_random_spawn:
-            self.spawner.src = BoxInSpace([1.5, 0, 0], None, 0.1, 0.1, 0.1)  # Close in, for visualizing
-            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 1.0)
-            self.spawner.spd = SpeedSpawner(1.0, 2.0)
+            self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
+            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
+            self.spawner.spd = SpeedSpawner(0.5, 0.7)
         else:
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
