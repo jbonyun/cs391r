@@ -7,16 +7,19 @@ import numpy as np
 
 from hit_ball_env import HitBallEnv
 
+# Control whether to do onscreen or offscreen.
+# Can't do both. Can't give robot images if you do onscreen.
+on_screen_render = False
+
 env = HitBallEnv(
         robots = ['IIWA'],
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
-        #initialization_noise = None,
-        use_camera_obs = False,  # True means controller will be given camera inputs
+        use_camera_obs = not on_screen_render,  # True means controller will be given camera inputs
         reward_shaping = True,   # Whether to offer partial rewards for partial success
-        has_renderer = True,    # True means you will see the visuals; can't be both on and off screen though.
-        has_offscreen_renderer = False,    # Required if you want camera observations for the controller.
+        has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
+        has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
         render_camera = 'underrobotleft',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
@@ -36,8 +39,8 @@ for i_episode in range(NUM_EPISODES):
     if i_episode != 0: observation = env.reset()
     i_step = 0
     while True:
-        # Update visuals (and maybe the off-screen render used for control observations?)
-        env.render()
+        # Update visuals
+        if env.viewer is not None: env.render()
         if i_step % 30 == 1:
             print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
             print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
