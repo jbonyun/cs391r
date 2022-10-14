@@ -10,6 +10,8 @@ from hit_ball_env import HitBallEnv
 # Control whether to do onscreen or offscreen.
 # Can't do both. Can't give robot images if you do onscreen.
 on_screen_render = False
+# If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
+matplotlib_display = True and not on_screen_render
 
 env = HitBallEnv(
         robots = ['IIWA'],
@@ -33,6 +35,18 @@ env = HitBallEnv(
     )
 
 
+from matplotlib import pyplot as plt
+def plot_observations(obs, cam_names):
+    im = np.hstack([obs[cname + '_image'] for cname in cam_names])
+    dp = np.hstack([np.dstack([obs[cname + '_depth'], obs[cname + '_depth'], obs[cname + '_depth']]) for cname in cam_names])
+    # Because depths are always near 1 (white), I exponentiate them to pull them down to be visible.
+    DEPTH_POWER = 25
+    dp = ((1-np.power(dp, DEPTH_POWER))*255).astype(np.uint8)
+    im = np.vstack([im, dp])
+    plt.imshow(np.flipud(im))
+    plt.draw()
+    plt.pause(0.001)
+
 
 NUM_EPISODES = 1
 for i_episode in range(NUM_EPISODES):
@@ -52,6 +66,8 @@ for i_episode in range(NUM_EPISODES):
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
+        if matplotlib_display and env.viewer is None and i_step % 5 == 1:
+            plot_observations(observation, env.camera_names)
         if reward > 0.1:
             print('Big reward!', np.round(reward,2))
         # Stop if done.
