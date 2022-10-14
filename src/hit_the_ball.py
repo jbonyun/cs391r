@@ -17,7 +17,7 @@ env = HitBallEnv(
         reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = True,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = False,    # Required if you want camera observations for the controller.
-        render_camera = None,   # name of camera to render (None = default which the user can control)
+        render_camera = 'underrobotleft',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
         control_freq = 30,      # Hz of controller being called
