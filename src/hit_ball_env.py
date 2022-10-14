@@ -219,6 +219,13 @@ class HitBallEnv(SingleArmEnv):
             renderer_config=renderer_config,
         )
 
+    def step(self, action):
+        """
+        Overload the base class just to trigger the ball to shoot
+        """
+        self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
+        return super().step(action)
+
 
     def reward(self, action):
         """

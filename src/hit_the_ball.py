@@ -62,8 +62,6 @@ for i_episode in range(NUM_EPISODES):
         if i_step == 0:
             action = np.random.uniform(-0.25, 0.25, (6,))  # Some random position
             #action = np.zeros((6,))  # What does zero action mean? Seems to stay still from starting pos.
-        # Shoot the ball, if it's the first step
-        env.ball.set_shooter_control(env.sim, None if i_step == 0 else 0.)
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
