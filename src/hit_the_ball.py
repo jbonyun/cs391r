@@ -60,8 +60,9 @@ for i_episode in range(NUM_EPISODES):
             print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
         # Choose an action. I'm doing this only on the first timestep and then repeating forever.
         if i_step == 0:
-            #action = np.random.uniform(-0.05, 0.05, (6,))
-            action = np.zeros((6,))  # What does zero action mean?
+            action = np.random.uniform(-0.25, 0.25, (6,))  # Some random position
+            #action = np.zeros((6,))  # What does zero action mean? Seems to stay still from starting pos.
+        # Shoot the ball, if it's the first step
         env.ball.set_shooter_control(env.sim, None if i_step == 0 else 0.)
         #ipdb.set_trace()
         # Execute the action and see result.
