@@ -7,12 +7,10 @@ from ball_spawn import BallTrajectory
 class PingPongBall(BallObject):
     MASS = 0.0027    # kg, official ping pong ball = 2.7g
     RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
-    ball_count = 0   # global count of the number of Ball objects we have, so they can have unique names.
-    def __init__(self, trajectory: BallTrajectory, timestep):
-        self.index = PingPongBall.ball_count  # Remember and update the global object count.
-        PingPongBall.ball_count = self.index + 1
+    def __init__(self, trajectory: BallTrajectory, timestep, name_suffix='0'):
+        self.name_suffix = str(name_suffix)
         super().__init__(
-            name='ball{}'.format(self.index),
+            name='ball{}'.format(self.name_suffix),
             size=[PingPongBall.RADIUS],
             rgba=[0, 0.5, 0.5, 1],
             solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
@@ -31,7 +29,7 @@ class PingPongBall(BallObject):
         return PingPongBall.MASS / self.volume()
     def create_shooter(self):
         # Needs to be appended to the world's actuators list
-        return ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.index), 'joint': 'ball{}_joint0'.format(self.index), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
+        return ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.name_suffix), 'joint': 'ball{}_joint0'.format(self.name_suffix), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
     def shooter_force(self):
         """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
         return self.trajectory.speed * PingPongBall.MASS / self.timestep

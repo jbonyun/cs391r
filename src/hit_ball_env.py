@@ -314,7 +314,7 @@ class HitBallEnv(SingleArmEnv):
 
         # Additional object references from this env
         self.ball_body_id = self.sim.model.body_name2id(self.ball.get_obj().get('name')) #root_body)
-        self.ball.actuator_id = self.sim.model.actuator_name2id('ball{}_shooter'.format(self.ball.index))
+        self.ball.actuator_id = self.sim.model.actuator_name2id('ball{}_shooter'.format(self.ball.name_suffix))
 
     def _reset_internal(self):
         """
