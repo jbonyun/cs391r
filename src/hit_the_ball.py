@@ -65,7 +65,7 @@ def plot_observations(obs, cam_names):
 
 NUM_EPISODES = 1
 for i_episode in range(NUM_EPISODES):
-    if i_episode != 0: observation = env.reset()
+    observation = env.reset()
     i_step = 0
     while True:
         # Update visuals
