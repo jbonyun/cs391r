@@ -65,11 +65,11 @@ for i_episode in range(NUM_EPISODES):
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
-        for val in observation:
-            print(val, ": ", type(observation[val]), observation[val].shape)
+        #for val in observation:
+        #    print(val, ": ", type(observation[val]), observation[val].shape)
 
 
-        error
+        #error
         if matplotlib_display and env.viewer is None and i_step % 5 == 1:
             plot_observations(observation, env.camera_names)
         if reward > 0.1:
