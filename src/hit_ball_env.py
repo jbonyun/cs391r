@@ -219,13 +219,23 @@ class HitBallEnv(SingleArmEnv):
             renderer_config=renderer_config,
         )
 
+    def format_observation(self, state):
+        # if no camera, do nothing
+        if not self.use_camera_obs:
+            return state
+        # else return image + joints
+        concat_image = np.concatenate((state["aboverobot_image"], state["aboverobot_depth"]), axis=2)
+        return { "image":concat_image,
+                 "joints":state["robot0_proprio-state"]
+        }
+
     def step(self, action):
         """
         Overload the base class just to trigger the ball to shoot
         """
         self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
-        return super().step(action)
-
+        obs, reward, done, info = super().step(action)
+        return self.format_observation(obs), reward, done, info
 
     def reward(self, action):
         """
@@ -406,3 +416,4 @@ class HitBallEnv(SingleArmEnv):
         # Color the gripper visualization site according to its distance to the ball
         if vis_settings["grippers"]:
             self._visualize_gripper_to_target(gripper=self.robots[0].gripper, target=self.ball)
+

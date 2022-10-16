@@ -37,6 +37,8 @@ for i in range(10000):
     # returns action from the agent
     action, _states = model.predict(obs, deterministic=True)
 
+    print(type(obs), obs.shape)
+
     # normal environment stuff
     obs, reward, done, info = env.step(action)
     env.render()

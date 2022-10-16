@@ -9,7 +9,7 @@ from hit_ball_env import HitBallEnv
 
 # Control whether to do onscreen or offscreen.
 # Can't do both. Can't give robot images if you do onscreen.
-on_screen_render = False
+on_screen_render = True
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
@@ -65,6 +65,11 @@ for i_episode in range(NUM_EPISODES):
         #ipdb.set_trace()
         # Execute the action and see result.
         observation, reward, done, info = env.step(action)
+        for val in observation:
+            print(val, ": ", type(observation[val]), observation[val].shape)
+
+
+        error
         if matplotlib_display and env.viewer is None and i_step % 5 == 1:
             plot_observations(observation, env.camera_names)
         if reward > 0.1:
