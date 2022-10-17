@@ -22,7 +22,8 @@ from ping_pong_ball import PingPongBall
 from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
 from deterministic_sampler import DeterministicSampler
 
-
+from gym.spaces import Box
+from gym import spaces
 
 class HitBallEnv(SingleArmEnv):
     """
@@ -218,6 +219,8 @@ class HitBallEnv(SingleArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
         )
+        self.format_spaces()
+        self.metadata = {'render.modes': ['human']}
 
     def format_observation(self, state):
         # if no camera, do nothing
@@ -228,6 +231,22 @@ class HitBallEnv(SingleArmEnv):
         return { "image":concat_image,
                  "joints":state["robot0_proprio-state"]
         }
+
+    def format_spaces(self):
+        self.action_space = Box(low=np.ones(6,dtype=np.float32) * -1.0,
+                                high=np.ones(6,dtype=np.float32) * 1.0)
+
+
+        self.observation_space =  spaces.Dict({"image": Box(low=np.ones((self.camera_widths[0], self.camera_heights[0], 4),dtype=np.float32) * -1,
+                                                            high=np.ones((self.camera_widths[0], self.camera_heights[0], 4),dtype=np.float32) * 1
+                                                            ),
+                                    "joints": Box(low=np.ones(28,dtype=np.float32) * -1,
+                                                  high=np.ones(28,dtype=np.float32) * 1
+                                                )
+                                    })
+        #print(type(self.observation_space), len(self.observation_space))
+        #for key in self.observation_space:
+        #    print(type(self.observation_space[key]), self.observation_space[key].shape)
 
     def step(self, action):
         """

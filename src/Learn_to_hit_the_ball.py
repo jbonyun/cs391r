@@ -3,9 +3,14 @@
 import ipdb
 import math
 import numpy as np
-
+from sb3_contrib import RecurrentPPO
 
 from hit_ball_env import HitBallEnv
+
+import torch
+torch.cuda.empty_cache()
+# print(torch.cuda.memory_summary(device=None, abbreviated=False))
+
 
 # Control whether to do onscreen or offscreen.
 # Can't do both. Can't give robot images if you do onscreen.
@@ -63,6 +68,14 @@ def plot_observations(obs, cam_names):
     plt.pause(0.001)
 
 
+# learn
+agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
+agent.learn(10_000)
+
+
+
+
+# test
 NUM_EPISODES = 1
 for i_episode in range(NUM_EPISODES):
     observation = env.reset()
