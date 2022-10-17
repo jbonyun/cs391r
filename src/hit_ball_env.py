@@ -237,6 +237,13 @@ class HitBallEnv(SingleArmEnv):
         obs, reward, done, info = super().step(action)
         return self.format_observation(obs), reward, done, info
 
+    def reset(self):
+        """
+        Overload the base class to process to observations.
+        """
+        obs = super().reset()
+        return self.format_observation(obs)
+
     def reward(self, action):
         """
         Reward function for the task.
