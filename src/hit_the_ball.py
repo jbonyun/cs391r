@@ -37,12 +37,27 @@ env = HitBallEnv(
 
 from matplotlib import pyplot as plt
 def plot_observations(obs, cam_names):
-    im = np.hstack([obs[cname + '_image'] for cname in cam_names])
-    dp = np.hstack([np.dstack([obs[cname + '_depth'], obs[cname + '_depth'], obs[cname + '_depth']]) for cname in cam_names])
-    # Because depths are always near 1 (white), I exponentiate them to pull them down to be visible.
-    DEPTH_POWER = 25
-    dp = ((1-np.power(dp, DEPTH_POWER))*255).astype(np.uint8)
-    im = np.vstack([im, dp])
+    image_keys = [k for k in obs.keys() if (k.endswith('image') and obs[k].ndim==3 and ((obs[k].shape[2]==3) or (obs[k].shape[2]==4)))]
+    im = None
+    dp = None
+    for imk in image_keys:
+        if obs[imk].shape[2] == 3:
+            if im is None:
+                im = obs[imk]
+            else:
+                im = np.hstack([im, obs[imk]])
+        else: # must be 4
+            if im is None:
+                im = obs[imk][:,:,0:3]
+                dp = obs[imk][:,:,3]
+            else:
+                im = np.hstack([im, obs[imk][:,:,0:3]])
+                dp = np.hstack([dp, obs[imk][:,:,3]])
+    if dp is not None:
+        # Because depths are always near 1 (white), I exponentiate them to pull them down to be visible
+        DEPTH_POWER = 25
+        dp = ((1-np.power(dp, DEPTH_POWER))*255).astype(np.uint8)
+        im = np.vstack([im.astype(np.uint8), np.dstack([dp, dp, dp])])
     plt.imshow(np.flipud(im))
     plt.draw()
     plt.pause(0.001)
