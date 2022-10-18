@@ -227,8 +227,11 @@ class HitBallEnv(SingleArmEnv):
         if not self.use_camera_obs:
             return state
         # else return image + joints
-        concat_image = np.concatenate((state["aboverobot_image"], state["aboverobot_depth"]), axis=2)
-        return { "image":concat_image,
+        if self.camera_depths:
+            concat_image = np.concatenate((state["aboverobot_image"], state["aboverobot_depth"]), axis=2)
+        else:
+            concat_image = state['aboverobot_image']
+        return { "image":concat_image.astype(np.uint8),
                  "joints":state["robot0_proprio-state"]
         }
 
