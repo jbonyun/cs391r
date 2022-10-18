@@ -233,20 +233,15 @@ class HitBallEnv(SingleArmEnv):
         }
 
     def format_spaces(self):
-        self.action_space = Box(low=np.ones(6,dtype=np.float32) * -1.0,
-                                high=np.ones(6,dtype=np.float32) * 1.0)
+        self.action_space = Box(low=-1., high=1., shape=(6,), dtype=np.float32)
 
-
-        self.observation_space =  spaces.Dict({"image": Box(low=np.ones((self.camera_widths[0], self.camera_heights[0], 4),dtype=np.float32) * -1,
-                                                            high=np.ones((self.camera_widths[0], self.camera_heights[0], 4),dtype=np.float32) * 1
-                                                            ),
-                                    "joints": Box(low=np.ones(28,dtype=np.float32) * -1,
-                                                  high=np.ones(28,dtype=np.float32) * 1
-                                                )
-                                    })
-        #print(type(self.observation_space), len(self.observation_space))
-        #for key in self.observation_space:
-        #    print(type(self.observation_space[key]), self.observation_space[key].shape)
+        num_channels = 4 if self.camera_depths else 3
+        self.observation_space =  spaces.Dict({
+            "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
+            "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
+        })
+        #for key,os in self.observation_space.items():
+        #    print(key, type(os), os.shape, os.dtype)
 
     def step(self, action):
         """
