@@ -39,71 +39,7 @@ env = HitBallEnv(
         # There are more optional args, but I didn't think them relevant.
     )
 
-
-from matplotlib import pyplot as plt
-def plot_observations(obs, cam_names):
-    image_keys = [k for k in obs.keys() if (k.endswith('image') and obs[k].ndim==3 and ((obs[k].shape[2]==3) or (obs[k].shape[2]==4)))]
-    im = None
-    dp = None
-    for imk in image_keys:
-        if obs[imk].shape[2] == 3:
-            if im is None:
-                im = obs[imk]
-            else:
-                im = np.hstack([im, obs[imk]])
-        else: # must be 4
-            if im is None:
-                im = obs[imk][:,:,0:3]
-                dp = obs[imk][:,:,3]
-            else:
-                im = np.hstack([im, obs[imk][:,:,0:3]])
-                dp = np.hstack([dp, obs[imk][:,:,3]])
-    if dp is not None:
-        # Because depths are always near 1 (white), I exponentiate them to pull them down to be visible
-        DEPTH_POWER = 25
-        dp = ((1-np.power(dp, DEPTH_POWER))*255).astype(np.uint8)
-        im = np.vstack([im.astype(np.uint8), np.dstack([dp, dp, dp])])
-    plt.imshow(np.flipud(im))
-    plt.draw()
-    plt.pause(0.001)
-
-
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
 agent.learn(10_000)
 
-
-
-
-# test
-NUM_EPISODES = 1
-for i_episode in range(NUM_EPISODES):
-    observation = env.reset()
-    i_step = 0
-    while True:
-        # Update visuals
-        if env.viewer is not None: env.render()
-        if i_step % 30 == 1:
-            print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
-            print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
-        # Choose an action. I'm doing this only on the first timestep and then repeating forever.
-        if i_step == 0:
-            action = np.random.uniform(-0.25, 0.25, (6,))  # Some random position
-            #action = np.zeros((6,))  # What does zero action mean? Seems to stay still from starting pos.
-        #ipdb.set_trace()
-        # Execute the action and see result.
-        observation, reward, done, info = env.step(action)
-        #for val in observation:
-        #    print(val, ": ", type(observation[val]), observation[val].shape)
-
-
-        #error
-        if matplotlib_display and env.viewer is None and i_step % 5 == 1:
-            plot_observations(observation, env.camera_names)
-        if reward > 0.1:
-            print('Big reward!', np.round(reward,2))
-        # Stop if done.
-        if done:
-            print("Episode finished after {} timesteps".format(i_step + 1))
-            break
-        i_step = i_step + 1
