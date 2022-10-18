@@ -33,8 +33,8 @@ env = HitBallEnv(
         control_freq = 30,      # Hz of controller being called
         horizon = 300,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['underrobotleft', 'underrobotright', 'aboverobot'],   # Cameras to be used for observations to controller
-        camera_heights = 320, #84,  # 84 was default, but our ball is small and hard to see
-        camera_widths = 320, #84,
+        camera_heights = 160,  # 84 was default, but our ball is small and hard to see
+        camera_widths = 160,
         camera_depths = True,   # True if you want RGB-D cameras
         # There are more optional args, but I didn't think them relevant.
     )
