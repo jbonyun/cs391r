@@ -41,5 +41,6 @@ env = HitBallEnv(
 
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
+print(agent.policy)
 agent.learn(10_000)
 
