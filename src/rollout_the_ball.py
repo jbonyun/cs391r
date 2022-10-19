@@ -63,32 +63,3 @@ def callback(locs, globs):
 #ipdb.set_trace()
 evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
 
-print('Done')
-sys.exit(0)
-
-NUM_EPISODES = 1
-for i_episode in range(NUM_EPISODES):
-    observation = env.reset()
-    i_step = 0
-    while True:
-        # Update visuals
-        if env.viewer is not None: env.render()
-        if i_step % 30 == 1:
-            print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
-            print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
-        # Choose an action. I'm doing this only on the first timestep and then repeating forever.
-        if i_step == 0:
-            action = np.random.uniform(-0.25, 0.25, (6,))  # Some random position
-            #action = np.zeros((6,))  # What does zero action mean? Seems to stay still from starting pos.
-        #ipdb.set_trace()
-        # Execute the action and see result.
-        observation, reward, done, info = env.step(action)
-        if matplotlib_display and env.viewer is None and i_step % 5 == 1:
-            plot_observations(observation, env.camera_names)
-        if reward > 0.1:
-            print('Big reward!', np.round(reward,2))
-        # Stop if done.
-        if done:
-            print("Episode finished after {} timesteps".format(i_step + 1))
-            break
-        i_step = i_step + 1
