@@ -27,12 +27,12 @@ env = HitBallEnv(
         reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
-        render_camera = 'underrobotleft',   # name of camera to render (None = default which the user can control)
+        render_camera = 'aboverobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
         control_freq = 30,      # Hz of controller being called
         horizon = 300,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
-        camera_names = ['underrobotleft', 'underrobotright', 'aboverobot'],   # Cameras to be used for observations to controller
+        camera_names = ['aboverobot'],   # Cameras to be used for observations to controller
         camera_heights = 160,  # 84 was default, but our ball is small and hard to see
         camera_widths = 160,
         camera_depths = True,   # True if you want RGB-D cameras
