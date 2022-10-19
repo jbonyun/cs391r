@@ -3,6 +3,7 @@
 import ipdb
 import math
 import numpy as np
+import sys
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback
 
@@ -48,8 +49,13 @@ class SaveAfterEpisodeCallback(BaseCallback):
     def _on_step(self):
         return True
 
+if len(sys.argv) > 1:
+    load_filename = sys.argv[1]
+
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
+if load_filename is not None:
+    agent.load(load_filename)
 print(agent.policy)
 agent.learn(10_000, callback=SaveAfterEpisodeCallback())
 
