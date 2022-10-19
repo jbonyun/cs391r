@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import imageio
 import ipdb
 import math
 import numpy as np
@@ -50,16 +51,21 @@ print(agent.policy)
 agent.load(model_filename)
 
 
+vid = imageio.get_writer('rollout.mp4', fps=30)
+
+
 def callback(locs, globs):
     #print('callback', locs.keys(), globs.keys())
     #print('  ', locs['observations'].keys())
     # It's wrapped really deep. This is hardcoded unravelling of the wrapping.
-    im = locs['model'].env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name='followrobot')
-    pyplot.imshow(np.flipud(im))
-    pyplot.draw()
-    pyplot.pause(0.001)
+    im = np.flipud(locs['model'].env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name='followrobot'))
+    vid.append_data(im)
+    #pyplot.imshow(im)
+    #pyplot.draw()
+    #pyplot.pause(0.001)
     #ipdb.set_trace()
 
 #ipdb.set_trace()
 evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
 
+vid.close()
