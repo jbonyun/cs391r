@@ -16,3 +16,6 @@ __pycache__
 *.tar.gz
 *.tgz
 *.zip
+
+# Output files from our work
+*.model

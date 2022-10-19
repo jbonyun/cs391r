@@ -4,6 +4,7 @@ import ipdb
 import math
 import numpy as np
 from sb3_contrib import RecurrentPPO
+from stable_baselines3.common.callbacks import BaseCallback
 
 from hit_ball_env import HitBallEnv
 
@@ -39,8 +40,16 @@ env = HitBallEnv(
         # There are more optional args, but I didn't think them relevant.
     )
 
+class SaveAfterEpisodeCallback(BaseCallback):
+    def on_rollout_end(self):
+        print('Rollout end')
+        self.model.save('save_checkpoint.model')
+
+    def _on_step(self):
+        return True
+
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
 print(agent.policy)
-agent.learn(10_000)
+agent.learn(10_000, callback=SaveAfterEpisodeCallback())
 
