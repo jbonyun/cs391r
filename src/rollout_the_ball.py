@@ -2,12 +2,10 @@
 
 import imageio
 import ipdb
-import math
 import numpy as np
-from matplotlib import pyplot
 from sb3_contrib import RecurrentPPO
-from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.monitor import Monitor
+#from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.callbacks import BaseCallback
 import sys
 
 from hit_ball_env import HitBallEnv
@@ -15,7 +13,9 @@ from hit_ball_env import HitBallEnv
 import torch
 torch.cuda.empty_cache()
 
-model_filename = sys.argv[1]
+model_filename = sys.argv[1] if len(sys.argv) > 1 else None
+if model_filename is None:
+    raise Exception('Must provide filename to load model from')
 
 # Control whether to do onscreen or offscreen.
 # Can't do both. Can't give robot images if you do onscreen.
@@ -45,27 +45,31 @@ env = HitBallEnv(
     )
 
 # learn
-menv = Monitor(env)
-agent = RecurrentPPO("MultiInputLstmPolicy", menv, verbose=1)
+agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
 print(agent.policy)
 agent.load(model_filename)
 
 
-vid = imageio.get_writer('rollout.mp4', fps=30)
+class MakeVideoCallback(BaseCallback):
+    def _on_training_start(self):
+        print('Vid start')
+        self.vid = imageio.get_writer('rollout.mp4', fps=30)
+    def _on_training_end(self):
+        print('Vid end')
+        self.vid.close()
+    def _on_step(self):
+        im = np.flipud(self.model.env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name='followrobot'))
+        self.vid.append_data(im)
+        if self.num_timesteps >= self.locals['total_timesteps']:
+            print('Did all timesteps in an episode')
+            print('Vid end')
+            self.vid.close()
+            return False
+        return True
+
+# Never got this to work. Deep down in the bowels it does things differently.
+#evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
+# So instead we will "learn" for one cycle, but really we're just recording the rollout.
+agent.learn(300, callback=MakeVideoCallback())
 
 
-def callback(locs, globs):
-    #print('callback', locs.keys(), globs.keys())
-    #print('  ', locs['observations'].keys())
-    # It's wrapped really deep. This is hardcoded unravelling of the wrapping.
-    im = np.flipud(locs['model'].env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name='followrobot'))
-    vid.append_data(im)
-    #pyplot.imshow(im)
-    #pyplot.draw()
-    #pyplot.pause(0.001)
-    #ipdb.set_trace()
-
-#ipdb.set_trace()
-evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
-
-vid.close()
