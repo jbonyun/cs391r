@@ -49,8 +49,7 @@ class SaveAfterEpisodeCallback(BaseCallback):
     def _on_step(self):
         return True
 
-if len(sys.argv) > 1:
-    load_filename = sys.argv[1]
+load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
