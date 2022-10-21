@@ -6,7 +6,7 @@ import numpy as np
 import sys
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 from hit_ball_env import HitBallEnv
 
@@ -41,8 +41,11 @@ def make_env():
 
 if __name__ == '__main__':
     # Create vectorized environments
-    num_env = 5
-    venv = SubprocVecEnv([make_env]*num_env)
+    num_env = 4
+    if num_env > 1:
+        venv = SubprocVecEnv([make_env]*num_env)
+    else:
+        venv = DummyVecEnv([make_env]*1)
 
     class SaveAfterEpisodeCallback(BaseCallback):
         def on_rollout_end(self):
