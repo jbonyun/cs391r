@@ -33,7 +33,7 @@ env = HitBallEnv(
         render_collision_mesh = False,
         render_visual_mesh = True,
         control_freq = 30,      # Hz of controller being called
-        horizon = 300,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
+        horizon = 256,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['aboverobot'],   # Cameras to be used for observations to controller
         camera_heights = 160,  # 84 was default, but our ball is small and hard to see
         camera_widths = 160,
@@ -43,7 +43,7 @@ env = HitBallEnv(
 
 class SaveAfterEpisodeCallback(BaseCallback):
     def on_rollout_end(self):
-        print('Rollout end')
+        print('Rollout end. Saving checkpoint.')
         self.model.save('save_checkpoint.model')
 
     def _on_step(self):
