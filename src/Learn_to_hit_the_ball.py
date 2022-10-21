@@ -46,8 +46,9 @@ if __name__ == '__main__':
 
     class SaveAfterEpisodeCallback(BaseCallback):
         def on_rollout_end(self):
-            print('Rollout end. Saving checkpoint.')
+            print('Rollout end')
             self.model.save('save_checkpoint.model')
+            print('Checkpoint saved')
 
         def _on_step(self):
             return True
