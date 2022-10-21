@@ -10,10 +10,6 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from hit_ball_env import HitBallEnv
 
-import torch
-torch.cuda.empty_cache()
-# print(torch.cuda.memory_summary(device=None, abbreviated=False))
-
 
 # Control whether to do onscreen or offscreen.
 # Can't do both. Can't give robot images if you do onscreen.
@@ -43,26 +39,27 @@ def make_env():
         # There are more optional args, but I didn't think them relevant.
     )
 
-# Create vectorized environments
-num_env = 5
-venv = SubprocVecEnv([make_env]*num_env, 'fork')
+if __name__ == '__main__':
+    # Create vectorized environments
+    num_env = 5
+    venv = SubprocVecEnv([make_env]*num_env)
 
-class SaveAfterEpisodeCallback(BaseCallback):
-    def on_rollout_end(self):
-        print('Rollout end. Saving checkpoint.')
-        self.model.save('save_checkpoint.model')
+    class SaveAfterEpisodeCallback(BaseCallback):
+        def on_rollout_end(self):
+            print('Rollout end. Saving checkpoint.')
+            self.model.save('save_checkpoint.model')
 
-    def _on_step(self):
-        return True
+        def _on_step(self):
+            return True
 
-# Prepare agent
-load_filename = sys.argv[1] if len(sys.argv) > 1 else None
+    # Prepare agent
+    load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
-agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1)
-if load_filename is not None:
-    agent.load(load_filename)
-print(agent.policy)
+    agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1)
+    if load_filename is not None:
+        agent.load(load_filename)
+    print(agent.policy)
 
-# learn
-agent.learn(10_000, callback=SaveAfterEpisodeCallback())
+    # learn
+    agent.learn(10_000, callback=SaveAfterEpisodeCallback())
 
