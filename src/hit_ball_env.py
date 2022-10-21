@@ -3,6 +3,7 @@ import ipdb
 import math
 
 import numpy as np
+from xml.etree.ElementTree import Element
 
 from robosuite.environments.manipulation.single_arm_env import SingleArmEnv
 from robosuite.models import MujocoWorldBase
@@ -341,6 +342,9 @@ class HitBallEnv(SingleArmEnv):
         # Disable gravity by setting it to zero acceleration in x/y/z
         self.model.root.find('option').attrib['gravity'] = '0 0 0'
         self.model.actuator.append(self.ball.create_shooter())
+        # Add a focal point for the camera
+        site_el = Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
+        self.model.worldbody.append(site_el)
         # DEBUGING: this is what will be instantiated by the mujoco, so a good time to print it out to review
         #for l in self.model.get_xml().split('\n'): print(l)
 
