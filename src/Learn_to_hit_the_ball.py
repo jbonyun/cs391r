@@ -78,9 +78,10 @@ if __name__ == '__main__':
     # Prepare agent
     load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
-    agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1)
     if load_filename is not None:
-        agent.load(load_filename)
+        agent = RecurrentPPO.load(load_filename, venv, verbose=1)
+    else:
+        agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1)
     print(agent.policy)
 
     # learn
