@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import collections
 import ipdb
 import math
 import numpy as np
@@ -58,9 +59,20 @@ if __name__ == '__main__':
 
     class ActionNormPrintCallback(BaseCallback):
         def _on_step(self):
-            if self.num_timesteps % 64 == 0:
+            if self.num_timesteps % 256 == 0:
                 n = np.linalg.norm(self.locals['actions'])
                 print('Action norm: {:.4}'.format(n))
+            return True
+
+    class RewardPrintCallback(BaseCallback):
+        def __init__(self):
+            super().__init__()
+            self.d = collections.deque([], 256*num_env*2)
+        def _on_step(self):
+            self.d.append(self.locals['rewards'])
+            if self.num_timesteps % 256 == 0:
+                n = np.mean(np.vstack(self.d)) * 256
+                print('Mean reward over {:d} episodes: {:.4}'.format(int(len(self.d)/256), n))
             return True
 
     # Prepare agent
@@ -72,5 +84,8 @@ if __name__ == '__main__':
     print(agent.policy)
 
     # learn
-    agent.learn(10_000, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback()]))
+    expected_fps = 105
+    approx_seconds_to_run = 5*60
+    steps_to_run = expected_fps * approx_seconds_to_run
+    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(), RewardPrintCallback()]))
 
