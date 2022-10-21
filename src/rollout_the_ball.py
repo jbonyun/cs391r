@@ -32,7 +32,7 @@ env = HitBallEnv(
         reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
-        render_camera = 'followball',   # name of camera to render (None = default which the user can control)
+        render_camera = 'followrobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
         control_freq = 30,      # Hz of controller being called
@@ -46,30 +46,33 @@ env = HitBallEnv(
 
 # learn
 agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
-print(agent.policy)
+#print(agent.policy)
 agent.load(model_filename)
 
 
 class MakeVideoCallback(BaseCallback):
+    def __init__(self, fname, camname, fps=30, verbose=0):
+        super().__init__(verbose)
+        self.fname = fname
+        self.camname = camname
+        self.fps = fps
     def _on_training_start(self):
         print('Vid start')
-        self.vid = imageio.get_writer('rollout.mp4', fps=30)
+        self.vid = imageio.get_writer(self.fname, fps=self.fps)
     def _on_training_end(self):
         print('Vid end')
         self.vid.close()
     def _on_step(self):
-        im = np.flipud(self.model.env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name='followrobot'))
+        im = np.flipud(self.model.env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name=self.camname))
         self.vid.append_data(im)
         if self.num_timesteps >= self.locals['total_timesteps']:
             print('Did all timesteps in an episode')
-            print('Vid end')
-            self.vid.close()
             return False
         return True
 
 # Never got this to work. Deep down in the bowels it does things differently.
 #evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
 # So instead we will "learn" for one cycle, but really we're just recording the rollout.
-agent.learn(300, callback=MakeVideoCallback())
+agent.learn(env.horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=env.control_freq))
 
 
