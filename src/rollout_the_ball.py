@@ -6,6 +6,7 @@ import numpy as np
 from sb3_contrib import RecurrentPPO
 #from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 import sys
 
 from hit_ball_env import HitBallEnv
@@ -23,7 +24,8 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
-env = HitBallEnv(
+def make_env():
+    return HitBallEnv(
         robots = ['IIWA'],
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
@@ -44,10 +46,9 @@ env = HitBallEnv(
         # There are more optional args, but I didn't think them relevant.
     )
 
-# learn
-agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
-#print(agent.policy)
-agent.load(model_filename)
+
+
+
 
 
 class MakeVideoCallback(BaseCallback):
@@ -70,9 +71,24 @@ class MakeVideoCallback(BaseCallback):
             return False
         return True
 
-# Never got this to work. Deep down in the bowels it does things differently.
-#evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
-# So instead we will "learn" for one cycle, but really we're just recording the rollout.
-agent.learn(env.horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=env.control_freq))
+if __name__ == '__main__':
+    # learn
+    #agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
+    #print(agent.policy)
+    #agent.load(model_filename)
+
+    num_env = 1
+    if num_env > 1:
+        venv = SubprocVecEnv([make_env]*num_env)
+    else:
+        venv = DummyVecEnv([make_env]*1)
+    agent = RecurrentPPO.load(model_filename, venv, verbose=1)
+    ipdb.set_trace()
+
+    # Never got this to work. Deep down in the bowels it does things differently.
+    #evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
+    # So instead we will "learn" for one cycle, but really we're just recording the rollout.
+    #agent.learn(venv.envs[0].horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=venv.envs[0].control_freq))
+    agent.learn(256, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=30))
 
 
