@@ -301,6 +301,7 @@ class HitBallEnv(SingleArmEnv):
 
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
         r_contact = 2.0 if made_contact else 0.0
+        if made_contact: print('Contact!')
 
         return r_prox, r_contact
 
