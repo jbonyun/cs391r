@@ -42,7 +42,7 @@ def make_env():
 
 if __name__ == '__main__':
     # Create vectorized environments
-    num_env = 4
+    num_env = 6
     if num_env > 1:
         venv = SubprocVecEnv([make_env]*num_env)
     else:
