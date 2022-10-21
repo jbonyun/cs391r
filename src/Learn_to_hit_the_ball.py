@@ -6,6 +6,7 @@ import numpy as np
 import sys
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from hit_ball_env import HitBallEnv
 
@@ -20,7 +21,8 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
-env = HitBallEnv(
+def make_env():
+    return HitBallEnv(
         robots = ['IIWA'],
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
@@ -41,6 +43,10 @@ env = HitBallEnv(
         # There are more optional args, but I didn't think them relevant.
     )
 
+# Create vectorized environments
+num_env = 5
+venv = SubprocVecEnv([make_env]*num_env, 'fork')
+
 class SaveAfterEpisodeCallback(BaseCallback):
     def on_rollout_end(self):
         print('Rollout end. Saving checkpoint.')
@@ -49,12 +55,14 @@ class SaveAfterEpisodeCallback(BaseCallback):
     def _on_step(self):
         return True
 
+# Prepare agent
 load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
-# learn
-agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
+agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1)
 if load_filename is not None:
     agent.load(load_filename)
 print(agent.policy)
+
+# learn
 agent.learn(10_000, callback=SaveAfterEpisodeCallback())
 
