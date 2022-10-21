@@ -5,7 +5,7 @@ import math
 import numpy as np
 import sys
 from sb3_contrib import RecurrentPPO
-from stable_baselines3.common.callbacks import BaseCallback
+from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 from hit_ball_env import HitBallEnv
@@ -56,6 +56,13 @@ if __name__ == '__main__':
         def _on_step(self):
             return True
 
+    class ActionNormPrintCallback(BaseCallback):
+        def _on_step(self):
+            if self.num_timesteps % 64 == 0:
+                n = np.linalg.norm(self.locals['actions'])
+                print('Action norm: {:.4}'.format(n))
+            return True
+
     # Prepare agent
     load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
@@ -65,5 +72,5 @@ if __name__ == '__main__':
     print(agent.policy)
 
     # learn
-    agent.learn(10_000, callback=SaveAfterEpisodeCallback())
+    agent.learn(10_000, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback()]))
 
