@@ -49,7 +49,7 @@ if __name__ == '__main__':
     print("AS = ", env.action_space.shape)
 
 
-    for i in range(1000):
+    for i in range(env.horizon):
         a = env.action_space.sample()
         obs, reward, done, info = env.step(a)
 
