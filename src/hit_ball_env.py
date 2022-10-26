@@ -253,6 +253,8 @@ class HitBallEnv(SingleArmEnv):
         """
         self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
         obs, reward, done, info = super().step(action)
+        if 'followrobot' in self.camera_names:
+            info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name='followrobot'))}
         return self.format_observation(obs), reward, done, info
 
     def reset(self):

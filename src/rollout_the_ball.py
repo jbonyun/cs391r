@@ -51,16 +51,16 @@ class MakeVideoCallback(BaseCallback):
     def _on_training_start(self):
         print('Vid start')
         self.vid = imageio.get_writer(self.fname, fps=self.fps)
-    def _on_training_end(self):
-        print('Vid end')
-        self.vid.close()
     def _on_step(self):
-        im = np.flipud(self.model.env.venv.envs[0].env.sim.render(height=512, width=1024, camera_name=self.camname))
+        im = self.locals['infos'][0]['observer']
         self.vid.append_data(im)
-        if self.num_timesteps >= self.locals['total_timesteps']:
+        if self.locals['n_steps'] >= self.locals['total_timesteps']:
             print('Did all timesteps in an episode')
             return False
         return True
+    def close(self):
+        print('Vid end')
+        self.vid.close()
 
 if __name__ == '__main__':
     # learn
@@ -68,18 +68,18 @@ if __name__ == '__main__':
     #print(agent.policy)
     #agent.load(model_filename)
 
-    num_env = 1
+    num_env = 6
     if num_env > 1:
-        venv = SubprocVecEnv([make_env]*num_env)
+        venv = SubprocVecEnv([make_env]*num_env, 'fork')
     else:
         venv = DummyVecEnv([make_env]*1)
     agent = RecurrentPPO.load(model_filename, venv, verbose=1)
-    ipdb.set_trace()
 
     # Never got this to work. Deep down in the bowels it does things differently.
     #evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
     # So instead we will "learn" for one cycle, but really we're just recording the rollout.
     #agent.learn(venv.envs[0].horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=venv.envs[0].control_freq))
-    agent.learn(256, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=30))
-
+    vid = MakeVideoCallback('rollout.mp4', 'followrobot', fps=30)
+    agent.learn(256*num_env, callback=vid)
+    vid.close()
 
