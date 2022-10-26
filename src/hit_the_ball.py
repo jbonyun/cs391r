@@ -18,7 +18,7 @@ env = HitBallEnv(
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
-        use_camera_obs = not on_screen_render,  # True means controller will be given camera inputs
+        use_camera_obs = True, # not on_screen_render,  # True means controller will be given camera inputs
         reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
@@ -62,20 +62,32 @@ def plot_observations(obs, cam_names):
     plt.draw()
     plt.pause(0.001)
 
+print("SS = ", env.observation_space)
+print("AS = ", env.action_space)
 
 NUM_EPISODES = 1
 for i_episode in range(NUM_EPISODES):
     observation = env.reset()
     i_step = 0
     while True:
+        # image = observation["image"]
+        # for row in range(image.shape[0]):
+        #     for column in range(image.shape[1]):
+        #         for channel in range(image.shape[2]):
+        #             if image[row, column, channel] != 0 and image[row, column, channel] != 1:
+        #                 print("Value ", image[row, column, channel]," at ", row, column, channel )
+
+
+
+
         # Update visuals
         if env.viewer is not None: env.render()
-        if i_step % 30 == 1:
-            print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
-            print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
+        # if i_step % 30 == 1:
+            # print('ball qpos', np.round(env.sim.data.get_body_xpos('ball0_main'), 4))
+            # print('ball qvel', np.round(env.sim.data.get_body_xvelp('ball0_main'), 4))
         # Choose an action. I'm doing this only on the first timestep and then repeating forever.
         if i_step == 0:
-            action = np.random.uniform(-0.25, 0.25, (6,))  # Some random position
+            action = np.ones((6,)) * 4 # np.random.uniform(-1.0, 1.0, (6,))  # Some random position
             #action = np.zeros((6,))  # What does zero action mean? Seems to stay still from starting pos.
         #ipdb.set_trace()
         # Execute the action and see result.
@@ -83,6 +95,7 @@ for i_episode in range(NUM_EPISODES):
         #for val in observation:
         #    print(val, ": ", type(observation[val]), observation[val].shape)
 
+        print(reward)
 
         #error
         if matplotlib_display and env.viewer is None and i_step % 5 == 1:

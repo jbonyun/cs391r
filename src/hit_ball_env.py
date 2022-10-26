@@ -150,7 +150,7 @@ class HitBallEnv(SingleArmEnv):
         gripper_types="default",
         initialization_noise="default",
         use_camera_obs=True,
-        use_object_obs=True,
+        use_object_obs=False,
         reward_scale=1.0,
         reward_shaping=False,
         placement_initializer=None,
@@ -272,11 +272,11 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             float: reward value
         """
-        r_prox, r_contact = self.staged_rewards()
+        r_vel, r_contact = self.staged_rewards()
         if self.reward_shaping:
-            reward = max(r_prox, r_contact)
+            reward = r_vel + r_contact
         else:
-            reward = 2.0 if r_contact > 0 else 0.0
+            reward = r_contact
 
         if self.reward_scale is not None:
             reward *= self.reward_scale / 2.0
@@ -293,17 +293,31 @@ class HitBallEnv(SingleArmEnv):
                 - (float): reward proximity
                 - (float): reward for contact
         """
-        # reaching is successful when the gripper site is close to the ball
+        # Calculate direction from gripper to ball
         ball_pos = self.sim.data.body_xpos[self.ball_body_id]
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        dist = np.linalg.norm(gripper_site_pos - ball_pos)
-        r_prox = (1 - np.tanh(10.0 * dist)) * 0.25  # Was from the stacking task; haven't investigated whether this is good reward for proximity
+        direction = ball_pos - gripper_site_pos
 
+        # normalize. Account for 0 norm
+        norm = np.linalg.norm(direction)
+        unit_direction = direction / norm
+
+        # find gripper velocity. Norm it
+        gripper_velocity = self.sim.data.site_xvelp[self.robots[0].eef_site_id]
+        gripper_velocity_norm = np.linalg.norm(gripper_velocity)
+        unit_gripper_velocity = gripper_velocity / gripper_velocity_norm
+
+        # take dot product. IF either norm is 0, thne the result is undefined. Use 0.0 as reward
+        reward_direction = np.dot(unit_direction,unit_gripper_velocity)
+        if norm == 0.0 or gripper_velocity_norm == 0.0:
+            reward_direction = 0.0
+
+        # give big points for contact
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
-        r_contact = 2.0 if made_contact else 0.0
+        r_contact = 200.0 if made_contact else 0.0
         if made_contact: print('Contact!')
 
-        return r_prox, r_contact
+        return reward_direction, r_contact
 
     def _load_model(self):
         """

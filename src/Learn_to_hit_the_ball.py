@@ -24,10 +24,10 @@ def make_env():
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
-        use_camera_obs = not on_screen_render,  # True means controller will be given camera inputs
+        use_camera_obs = True,  # True means controller will be given camera inputs
         reward_shaping = True,   # Whether to offer partial rewards for partial success
-        has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
-        has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
+        has_renderer = False,    # True means you will see the visuals; can't be both on and off screen though.
+        has_offscreen_renderer = True,    # Required if you want camera observations for the controller.
         render_camera = 'aboverobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
@@ -48,10 +48,14 @@ if __name__ == '__main__':
     else:
         venv = DummyVecEnv([make_env]*1)
 
+
+    #print("SS = ", venv.observation_space)
+    #print("AS = ", venv.action_space)
+
     class SaveAfterEpisodeCallback(BaseCallback):
         def on_rollout_end(self):
             print('Rollout end')
-            self.model.save('save_checkpoint.model')
+            self.model.save('save_checkpoint_backup.model')
             print('Checkpoint saved')
 
         def _on_step(self):
