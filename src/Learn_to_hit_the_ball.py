@@ -71,7 +71,7 @@ if __name__ == '__main__':
     class RewardPrintCallback(BaseCallback):
         def __init__(self):
             super().__init__()
-            self.d = collections.deque([], 256*num_env*2)
+            self.d = collections.deque([], 256*num_env)
         def _on_step(self):
             self.d.append(self.locals['rewards'])
             if self.num_timesteps % 256 == 0:
