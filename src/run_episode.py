@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+import gym
 import ipdb
 import math
 import numpy as np
@@ -41,11 +41,16 @@ def make_env():
 
 if __name__ == '__main__':
     # Create vectorized environments
+    # env = gym.make("CartPole-v1")
     env = make_env()
-    observation, info = env.reset()
-    print("SS:")
-    for key in env.observation_space:
-        print("\t", key, " = ", env.observation_space[key].shape)
+    env.reset()
+
+
+    if type(env.observation_space) is dict:
+        print("SS:")
+        for key in env.observation_space:
+            print("\t", key, " = ", env.observation_space[key].shape)
+
     print("AS = ", env.action_space.shape)
 
 
@@ -53,8 +58,11 @@ if __name__ == '__main__':
         a = env.action_space.sample()
         obs, reward, done, info = env.step(a)
 
-        # print("Reward ", reward)
+        #print("obs ", obs)
+        print("Reward ", reward)
+        #print("done ", done)
+        #print("info ", info)
 
         if done:
-            obs, info = env.reset()
+            obs = env.reset()
 

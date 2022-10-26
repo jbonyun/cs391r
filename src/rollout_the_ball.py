@@ -18,22 +18,16 @@ model_filename = sys.argv[1] if len(sys.argv) > 1 else None
 if model_filename is None:
     raise Exception('Must provide filename to load model from')
 
-# Control whether to do onscreen or offscreen.
-# Can't do both. Can't give robot images if you do onscreen.
-on_screen_render = False
-# If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
-matplotlib_display = True and not on_screen_render
-
 def make_env():
     return HitBallEnv(
         robots = ['IIWA'],
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
-        use_camera_obs = not on_screen_render,  # True means controller will be given camera inputs
+        use_camera_obs = True,  # True means controller will be given camera inputs
         reward_shaping = True,   # Whether to offer partial rewards for partial success
-        has_renderer = on_screen_render,    # True means you will see the visuals; can't be both on and off screen though.
-        has_offscreen_renderer = not on_screen_render,    # Required if you want camera observations for the controller.
+        has_renderer = False,    # True means you will see the visuals; can't be both on and off screen though.
+        has_offscreen_renderer = True,    # Required if you want camera observations for the controller.
         render_camera = 'followrobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
@@ -45,9 +39,6 @@ def make_env():
         camera_depths = True,   # True if you want RGB-D cameras
         # There are more optional args, but I didn't think them relevant.
     )
-
-
-
 
 
 
