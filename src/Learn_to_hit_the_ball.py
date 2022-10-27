@@ -54,9 +54,14 @@ if __name__ == '__main__':
 
     class SaveAfterEpisodeCallback(BaseCallback):
         def on_rollout_end(self):
-            print('Rollout end')
-            self.model.save('save_checkpoint.model')
-            print('Checkpoint saved')
+            if self.num_timesteps % (256*2) == 0:
+                print('Episode+Rollout end +Save')
+                self.model.save('save_checkpoint.model')
+                print('Checkpoint saved')
+            elif self.num_timesteps % 256 == 0:
+                print('Episode+Rollout end')
+            else:
+                print('Rollout end')
 
         def _on_step(self):
             return True
