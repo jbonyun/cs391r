@@ -69,14 +69,17 @@ if __name__ == '__main__':
             return True
 
     class RewardPrintCallback(BaseCallback):
-        def __init__(self):
+        def __init__(self, episode_len_steps, history_len_episodes, num_envs):
             super().__init__()
-            self.d = collections.deque([], 256*num_env)
+            self.d = collections.deque([], int(np.ceil(history_len_episodes * episode_len_steps / num_envs)))
+            self.ep_len = episode_len_steps
         def _on_step(self):
             self.d.append(self.locals['rewards'])
-            if self.num_timesteps % 256 == 0:
-                n = np.mean(np.vstack(self.d)) * 256
-                print('Mean reward over {:d} episodes: {:.4}'.format(int(len(self.d)/256), n))
+            if self.num_timesteps % self.ep_len == 0:
+                all_data = np.vstack(self.d)
+                mean = np.mean(all_data) * self.ep_len  # across both dimensions
+                num_ep = np.product(all_data.shape) / self.ep_len
+                print('Mean reward over {:d} episodes: {:.4}'.format(int(num_ep), mean))
             return True
 
     # Prepare agent
@@ -92,5 +95,5 @@ if __name__ == '__main__':
     expected_fps = 105
     approx_seconds_to_run = 5*60
     steps_to_run = expected_fps * approx_seconds_to_run
-    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(), RewardPrintCallback()]))
+    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(), RewardPrintCallback(256, num_env*5, num_env)]))
 
