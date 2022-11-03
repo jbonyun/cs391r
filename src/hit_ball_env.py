@@ -313,6 +313,8 @@ class HitBallEnv(SingleArmEnv):
         reward_direction = np.dot(unit_direction,unit_gripper_velocity)
         if norm == 0.0 or gripper_velocity_norm == 0.0:
             reward_direction = 0.0
+        reward_direction_scale = 0.25 #1.0
+        reward_direction *= reward_direction_scale
         # Was from the stacking task; scale 0.25 to 20
         prox_dist_scale = 3.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
         prox_mult_scale = 10. #0.25
@@ -321,7 +323,7 @@ class HitBallEnv(SingleArmEnv):
 
         # give big points for contact
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
-        r_contact = 200.0 if made_contact else 0.0
+        r_contact = 50.0 if made_contact else 0.0
         if made_contact: print('Contact!')
 
         return reward_direction, r_prox, r_contact
