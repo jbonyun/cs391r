@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from robosuite.models import MujocoWorldBase
 from robosuite.utils.mjcf_utils import array_to_string
 
-from gripper import BatOneGripper
+from gripper.cylinderical_bat import BatOneGripper
 from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
 
 world = MujocoWorldBase()
