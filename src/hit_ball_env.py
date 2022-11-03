@@ -15,7 +15,7 @@ from robosuite.utils.transform_utils import convert_quat
 
 from space_arena import SpaceArena
 
-from gripper import BatOneGripper
+from gripper.cylindrical_bat import BatOneGripper
 from robosuite.models.grippers import GRIPPER_MAPPING
 GRIPPER_MAPPING['BatOneGripper'] = BatOneGripper
 

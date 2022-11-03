@@ -15,7 +15,7 @@ class BatOneGripper(GripperModel):
 
     def __init__(self, idn=0):
         #super().__init__(xml_path_completion("bat_one_gripper.xml"), idn=idn)
-        super().__init__("gripper/bat_one_gripper.xml", idn=idn)
+        super().__init__("gripper/cylindrical_bat/bat_one_gripper.xml", idn=idn)
 
     def format_action(self, action):
         return action
