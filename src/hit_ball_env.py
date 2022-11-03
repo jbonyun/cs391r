@@ -274,9 +274,9 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             float: reward value
         """
-        r_vel, r_contact = self.staged_rewards()
+        r_vel, r_prox, r_contact = self.staged_rewards()
         if self.reward_shaping:
-            reward = r_vel + r_contact
+            reward = r_vel + r_prox + r_contact
         else:
             reward = r_contact
 
@@ -313,13 +313,18 @@ class HitBallEnv(SingleArmEnv):
         reward_direction = np.dot(unit_direction,unit_gripper_velocity)
         if norm == 0.0 or gripper_velocity_norm == 0.0:
             reward_direction = 0.0
+        # Was from the stacking task; scale 0.25 to 20
+        prox_dist_scale = 3.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
+        prox_mult_scale = 10. #0.25
+        dist = np.linalg.norm(gripper_site_pos - ball_pos)
+        r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
         # give big points for contact
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
         r_contact = 200.0 if made_contact else 0.0
         if made_contact: print('Contact!')
 
-        return reward_direction, r_contact
+        return reward_direction, r_prox, r_contact
 
     def _load_model(self):
         """
@@ -443,7 +448,7 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             bool: True if contact is made
         """
-        _, r_contact = self.staged_rewards()
+        _, _, r_contact = self.staged_rewards()
         return r_contact > 0
 
     def visualize(self, vis_settings):
