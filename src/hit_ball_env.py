@@ -292,31 +292,36 @@ class HitBallEnv(SingleArmEnv):
         Helper function to calculate staged rewards based on current physical states.
 
         Returns:
-            2-tuple:
+            3-tuple:
 
-                - (float): reward proximity
+                - (float): reward for direction of motion
+                - (float): reward for proximity
                 - (float): reward for contact
         """
-        # Calculate direction from gripper to ball
-        ball_pos = self.sim.data.body_xpos[self.ball_body_id]
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        direction = ball_pos - gripper_site_pos
+        reward_direction_scale = 0.10 #1.0
+        if reward_direction_scale != 0.0:
+            # Calculate direction from gripper to ball
+            ball_pos = self.sim.data.body_xpos[self.ball_body_id]
+            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+            direction = ball_pos - gripper_site_pos
 
-        # normalize. Account for 0 norm
-        norm = np.linalg.norm(direction)
-        unit_direction = direction / norm
+            # normalize. Account for 0 norm
+            norm = np.linalg.norm(direction)
+            unit_direction = direction / norm
 
-        # find gripper velocity. Norm it
-        gripper_velocity = self.sim.data.site_xvelp[self.robots[0].eef_site_id]
-        gripper_velocity_norm = np.linalg.norm(gripper_velocity)
-        unit_gripper_velocity = gripper_velocity / gripper_velocity_norm
+            # find gripper velocity. Norm it
+            gripper_velocity = self.sim.data.site_xvelp[self.robots[0].eef_site_id]
+            gripper_velocity_norm = np.linalg.norm(gripper_velocity)
+            unit_gripper_velocity = gripper_velocity / gripper_velocity_norm
 
-        # take dot product. IF either norm is 0, thne the result is undefined. Use 0.0 as reward
-        reward_direction = np.dot(unit_direction,unit_gripper_velocity)
-        if norm == 0.0 or gripper_velocity_norm == 0.0:
-            reward_direction = 0.0
-        reward_direction_scale = 0.25 #1.0
-        reward_direction *= reward_direction_scale
+            # take dot product. IF either norm is 0, thne the result is undefined. Use 0.0 as reward
+            reward_direction = np.dot(unit_direction,unit_gripper_velocity)
+            if norm == 0.0 or gripper_velocity_norm == 0.0:
+                reward_direction = 0.0
+            reward_direction *= reward_direction_scale
+        else:
+            reward_direction = 0.
+
         # Was from the stacking task; scale 0.25 to 20
         prox_dist_scale = 3.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
         prox_mult_scale = 10. #0.25
