@@ -66,7 +66,7 @@ class MakeVideoCallback(BaseCallback):
         for i in range(self.num_envs):
             im = self.locals['infos'][i]['observer']
             self.vid[i].append_data(im)
-        if self.locals['n_steps'] >= self.locals['total_timesteps']:
+        if self.locals['n_steps'] >= self.locals['total_timesteps'] / self.num_envs:
             print('Did all timesteps in an episode')
             return False
         return True
