@@ -18,6 +18,12 @@ model_filename = sys.argv[1] if len(sys.argv) > 1 else None
 if model_filename is None:
     raise Exception('Must provide filename to load model from')
 
+
+num_env = 3
+control_freq = 15
+horizon = 64
+
+
 def make_env():
     return HitBallEnv(
         robots = ['IIWA'],
@@ -31,8 +37,8 @@ def make_env():
         render_camera = 'followrobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
-        control_freq = 30,      # Hz of controller being called
-        horizon = 256,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
+        control_freq = control_freq, # Hz of controller being called
+        horizon = horizon,           # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['followrobot','aboverobot'],   # Cameras to be used for observations to controller
         camera_heights = 160,  # 84 was default, but our ball is small and hard to see
         camera_widths = 160,
@@ -75,18 +81,17 @@ if __name__ == '__main__':
     #print(agent.policy)
     #agent.load(model_filename)
 
-    num_env = 6
     if num_env > 1:
         venv = SubprocVecEnv([make_env]*num_env, 'fork')
     else:
-        venv = DummyVecEnv([make_env]*1)
+        venv = DummyVecEnv([make_env]*num_env)
     agent = RecurrentPPO.load(model_filename, venv, verbose=1)
 
     # Never got this to work. Deep down in the bowels it does things differently.
     #evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
     # So instead we will "learn" for one cycle, but really we're just recording the rollout.
     #agent.learn(venv.envs[0].horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=venv.envs[0].control_freq))
-    vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', fps=30, num_envs=num_env)
-    agent.learn(255*num_env, callback=vid)
+    vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', fps=control_freq, num_envs=num_env)
+    agent.learn(horizon*num_env, callback=vid)
     vid.close()
 
