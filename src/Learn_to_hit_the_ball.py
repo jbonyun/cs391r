@@ -39,8 +39,8 @@ def make_env():
         control_freq = control_freq, # Hz of controller being called
         horizon = horizon,           # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['aboverobot'],   # Cameras to be used for observations to controller
-        camera_heights = 160,  # 84 was default, but our ball is small and hard to see
-        camera_widths = 160,
+        camera_heights = 84,  # 84 was default, but our ball is small and hard to see
+        camera_widths = 84,
         camera_depths = True,   # True if you want RGB-D cameras
         # There are more optional args, but I didn't think them relevant.
     )
