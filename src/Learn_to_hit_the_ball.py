@@ -42,6 +42,7 @@ def make_env():
         camera_heights = 84,  # 84 was default, but our ball is small and hard to see
         camera_widths = 84,
         camera_depths = True,   # True if you want RGB-D cameras
+        camera_color = False,
         # There are more optional args, but I didn't think them relevant.
     )
 
