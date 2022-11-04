@@ -6,7 +6,7 @@ from ball_spawn import BallTrajectory
 
 class PingPongBall(BallObject):
     MASS = 0.0027    # kg, official ping pong ball = 2.7g
-    RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
+    RADIUS = 0.20    # m, official ping pong ball = 40mm diameter
     def __init__(self, trajectory: BallTrajectory, timestep, name_suffix='0'):
         self.name_suffix = str(name_suffix)
         super().__init__(
