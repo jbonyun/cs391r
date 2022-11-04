@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import ipdb
 import math
+import random
 
 import numpy as np
 from xml.etree.ElementTree import Element
@@ -173,6 +174,8 @@ class HitBallEnv(SingleArmEnv):
         renderer="mujoco",
         renderer_config=None,
     ):
+        np.random.seed()
+        random.seed()
 
         # reward configuration
         self.reward_scale = reward_scale
