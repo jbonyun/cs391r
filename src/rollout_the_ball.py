@@ -4,7 +4,6 @@ import imageio
 import ipdb
 import numpy as np
 from sb3_contrib import RecurrentPPO
-#from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 import sys
@@ -76,10 +75,6 @@ class MakeVideoCallback(BaseCallback):
             self.vid[i].close()
 
 if __name__ == '__main__':
-    # learn
-    #agent = RecurrentPPO("MultiInputLstmPolicy", env, verbose=1)
-    #print(agent.policy)
-    #agent.load(model_filename)
 
     if num_env > 1:
         venv = SubprocVecEnv([make_env]*num_env, 'fork')
@@ -87,10 +82,7 @@ if __name__ == '__main__':
         venv = DummyVecEnv([make_env]*num_env)
     agent = RecurrentPPO.load(model_filename, venv, verbose=1)
 
-    # Never got this to work. Deep down in the bowels it does things differently.
-    #evaluate_policy(agent, agent.env, 1, render=False, callback=callback)
-    # So instead we will "learn" for one cycle, but really we're just recording the rollout.
-    #agent.learn(venv.envs[0].horizon, callback=MakeVideoCallback('rollout.mp4', 'followrobot', fps=venv.envs[0].control_freq))
+    # We will "learn" for one cycle, but really we're just recording the rollout.
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', fps=control_freq, num_envs=num_env)
     agent.learn(horizon*num_env, callback=vid)
     vid.close()
