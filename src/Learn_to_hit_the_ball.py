@@ -18,6 +18,11 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
+
+num_env = 3
+control_freq = 15
+horizon = 64
+
 def make_env():
     return HitBallEnv(
         robots = ['IIWA'],
@@ -31,8 +36,8 @@ def make_env():
         render_camera = 'aboverobot',   # name of camera to render (None = default which the user can control)
         render_collision_mesh = False,
         render_visual_mesh = True,
-        control_freq = 30,      # Hz of controller being called
-        horizon = 256,          # Number of control steps in an episode (not seconds, not time steps, but control steps)
+        control_freq = control_freq, # Hz of controller being called
+        horizon = horizon,           # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['aboverobot'],   # Cameras to be used for observations to controller
         camera_heights = 160,  # 84 was default, but our ball is small and hard to see
         camera_widths = 160,
@@ -42,7 +47,6 @@ def make_env():
 
 if __name__ == '__main__':
     # Create vectorized environments
-    num_env = 6
     if num_env > 1:
         venv = SubprocVecEnv([make_env]*num_env)
     else:
@@ -54,11 +58,11 @@ if __name__ == '__main__':
 
     class SaveAfterEpisodeCallback(BaseCallback):
         def on_rollout_end(self):
-            if self.num_timesteps % (256*2) == 0:
+            if self.num_timesteps % (horizon*6) == 0:
                 print('Episode+Rollout end +Save')
                 self.model.save('save_checkpoint.model')
                 print('Checkpoint saved')
-            elif self.num_timesteps % 256 == 0:
+            elif self.num_timesteps % horizon == 0:
                 print('Episode+Rollout end')
             else:
                 print('Rollout end')
@@ -68,7 +72,7 @@ if __name__ == '__main__':
 
     class ActionNormPrintCallback(BaseCallback):
         def _on_step(self):
-            if self.num_timesteps % 256 == 0:
+            if self.num_timesteps % horizon == 0:
                 n = np.linalg.norm(self.locals['actions'])
                 print('Action norm: {:.4}'.format(n))
             return True
@@ -97,8 +101,8 @@ if __name__ == '__main__':
     print(agent.policy)
 
     # learn
-    expected_fps = 105
-    approx_seconds_to_run = 5*60
+    expected_fps = {1:50, 3:65, 4:80, 5:100, 6: 105}[num_env]
+    approx_seconds_to_run = 60*60*24
     steps_to_run = expected_fps * approx_seconds_to_run
-    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(), RewardPrintCallback(256, num_env*5, num_env)]))
+    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(), RewardPrintCallback(horizon, num_env*5, num_env)]))
 
