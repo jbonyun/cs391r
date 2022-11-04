@@ -313,7 +313,7 @@ class HitBallEnv(SingleArmEnv):
                 - (float): reward for proximity
                 - (float): reward for contact
         """
-        reward_direction_scale = 0.10 #1.0
+        reward_direction_scale = 0.05 #1.0
         if reward_direction_scale != 0.0:
             # Calculate direction from gripper to ball
             ball_pos = self.sim.data.body_xpos[self.ball_body_id]
@@ -338,7 +338,7 @@ class HitBallEnv(SingleArmEnv):
             reward_direction = 0.
 
         # Was from the stacking task; scale 0.25 to 20
-        prox_dist_scale = 3.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
+        prox_dist_scale = 2.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
         prox_mult_scale = 10. #0.25
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
