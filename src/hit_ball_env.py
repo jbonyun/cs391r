@@ -227,6 +227,7 @@ class HitBallEnv(SingleArmEnv):
             renderer_config=renderer_config,
         )
         self.camera_color=camera_color
+        self.has_collided = False
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
 
@@ -277,6 +278,7 @@ class HitBallEnv(SingleArmEnv):
         Overload the base class to process to observations.
         """
         obs = super().reset()
+        self.has_collided = False
         return self.format_observation(obs)
 
     def reward(self, action):
@@ -342,8 +344,15 @@ class HitBallEnv(SingleArmEnv):
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
         # give big points for contact
+        r_contact = 0.
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
-        r_contact = 50.0 if made_contact else 0.0
+        if made_contact:
+            if not self.has_collided:
+                print('Contact!')
+                r_contact = 100.
+                self.has_collided = True
+            else:
+                print('Contact again! (no reward)')
         if made_contact: print('Contact!')
 
         return reward_direction, r_prox, r_contact
