@@ -168,6 +168,7 @@ class HitBallEnv(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        camera_color=True,
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mujoco",
         renderer_config=None,
@@ -222,6 +223,7 @@ class HitBallEnv(SingleArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
         )
+        self.camera_color=camera_color
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
 
@@ -230,10 +232,17 @@ class HitBallEnv(SingleArmEnv):
         if not self.use_camera_obs:
             return state
         # else return image + joints
+        obs_cam = self.render_camera
         if self.camera_depths:
-            concat_image = np.concatenate((state["aboverobot_image"], state["aboverobot_depth"]), axis=2)
+            if self.camera_color:
+                concat_image = np.concatenate((state[obs_cam+'_image'], state[obs_cam+'_depth']), axis=2)
+            else:
+                # Depth... inserting a singular dim to be the right shape... but didn't work
+                #concat_image = np.expand_dims(state["aboverobot_depth"], axis=2)
+                # Grayscale-D
+                concat_image = np.concatenate((np.expand_dims(np.mean(state[obs_cam+'_image'], axis=2), axis=2), state[obs_cam+'_depth']), axis=2)
         else:
-            concat_image = state['aboverobot_image']
+            concat_image = state[obs_cam + '_image']
         return { "image":concat_image.astype(np.uint8),
                  "joints":state["robot0_proprio-state"]
         }
@@ -241,7 +250,8 @@ class HitBallEnv(SingleArmEnv):
     def format_spaces(self):
         self.action_space = Box(low=-1., high=1., shape=(6,), dtype=np.float32)
 
-        num_channels = 4 if self.camera_depths else 3
+        num_channels = 3 if self.camera_color else 1
+        num_channels += (1 if self.camera_depths else 0)
         self.observation_space =  spaces.Dict({
             "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
             "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
