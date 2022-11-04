@@ -372,6 +372,8 @@ class HitBallEnv(SingleArmEnv):
         # Tweak it in ways that can't be done before the merging done in Task class.
         # Disable gravity by setting it to zero acceleration in x/y/z
         self.model.root.find('option').attrib['gravity'] = '0 0 0'
+        self.model.root.find('option').attrib['density'] = '0'
+        self.model.root.find('option').attrib['viscosity'] = '0'
         self.model.actuator.append(self.ball.create_shooter())
         # Add a focal point for the camera
         site_el = Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
