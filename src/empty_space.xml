@@ -7,10 +7,10 @@
   <worldbody>
     <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="1 1 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
     <light diffuse=".8 .8 .8" dir="0 -.15 -1" directional="false" pos="-3. -3. 4.0" specular="0.3 0.3 0.3" castshadow="false"/>
-    <camera mode="fixed" name="underrobotleft" pos="0.2 0.2 0" xyaxes="-0.2 -2.3 0 0 0.2 2.3" fovy="90"/>
-    <camera mode="fixed" name="underrobotright" pos="0.2 -0.2 0" xyaxes="0.2 -2.3 0 0 -0.2 2.3" fovy="90"/>
+    <!--<camera mode="fixed" name="underrobotleft" pos="0.2 0.2 0" xyaxes="-0.2 -2.3 0 0 0.2 2.3" fovy="90"/>-->
+    <!--<camera mode="fixed" name="underrobotright" pos="0.2 -0.2 0" xyaxes="0.2 -2.3 0 0 -0.2 2.3" fovy="90"/>-->
     <camera mode="fixed" name="aboverobot" pos="-0.2 0 1.2" xyaxes="0 -2.7 0 3.24 0 7.29" fovy="90"/>
-    <camera mode="targetbody" name="followball" pos="0.2 0.2 0" fovy="90" target="ball0_main"/>
+    <!--<camera mode="targetbody" name="followball" pos="0.2 0.2 0" fovy="90" target="ball0_main"/>-->
     <camera mode="targetbody" name="followrobot" pos="-0.8 1.3 0.5" fovy="40" target="observertarget"/>
     <!-- front view -->
     <!--<camera mode="fixed" name="frontview" pos="5.0 0 1.45" quat="0.56 0.43 0.43 0.56"/>-->
