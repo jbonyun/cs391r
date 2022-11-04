@@ -20,7 +20,7 @@ from robosuite.models.grippers import GRIPPER_MAPPING
 GRIPPER_MAPPING['BatOneGripper'] = BatOneGripper
 
 from ping_pong_ball import PingPongBall
-from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
+from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory, OneOfN
 from deterministic_sampler import DeterministicSampler
 
 from gym.spaces import Box
@@ -192,6 +192,8 @@ class HitBallEnv(SingleArmEnv):
         else:
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+            #self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0),
+            #                           CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)])
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
 
         super().__init__(

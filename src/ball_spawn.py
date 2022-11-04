@@ -107,6 +107,14 @@ class SpeedSpawner():
         return random.uniform(self.min_vel, self.max_vel)
 
 
+class OneOfN():
+    def __init__(self, the_things):
+        self.things = the_things
+        np.random.seed()
+    def random(self):
+        thing = np.random.choice(self.things)
+        return thing.random()
+
 
 class BallTrajectory():
     """Describes a ball's trajectory"""
