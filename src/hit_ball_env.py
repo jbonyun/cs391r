@@ -13,6 +13,7 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.camera_utils import get_real_depth_map
 
 from space_arena import SpaceArena
 
@@ -239,13 +240,23 @@ class HitBallEnv(SingleArmEnv):
         # else return image + joints
         obs_cam = self.render_camera
         if self.camera_depths:
+            # Reprocess depth to have a max distance much closer than Mujoco's 145m.
+            # This matters bc Mujoco normalizes between 0 and 1, but since we have no
+            # background, it includes lots of points at 145m in the normalizing. Which
+            # squashes our relevant depths into nothingness.
+            dp = state[obs_cam+'_depth']
+            rd = get_real_depth_map(self.sim, dp)
+            MAX_DISTANCE = 10.  # In meters
+            rdcap = np.minimum(rd, MAX_DISTANCE)
+            dp = 1. - (rdcap / MAX_DISTANCE)
+            dp = (dp*255).astype(np.uint8)
             if self.camera_color:
-                concat_image = np.concatenate((state[obs_cam+'_image'], state[obs_cam+'_depth']), axis=2)
+                im = state[obs_cam+'_image']
             else:
-                # Depth... inserting a singular dim to be the right shape... but didn't work
-                #concat_image = np.expand_dims(state["aboverobot_depth"], axis=2)
                 # Grayscale-D
-                concat_image = np.concatenate((np.expand_dims(np.mean(state[obs_cam+'_image'], axis=2), axis=2), state[obs_cam+'_depth']), axis=2)
+                im = np.expand_dims(np.mean(state[obs_cam+'_image'], axis=2), axis=2).astype(np.uint8)
+            #print('fmtobs im range',np.max(im), np.min(im), ' dp range',np.max(dp), np.min(dp))
+            concat_image = np.concatenate((im,dp), axis=2)
         else:
             concat_image = state[obs_cam + '_image']
         return { "image":concat_image.astype(np.uint8),
