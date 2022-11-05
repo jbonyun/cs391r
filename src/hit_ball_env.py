@@ -229,6 +229,7 @@ class HitBallEnv(SingleArmEnv):
         )
         self.camera_color=camera_color
         self.has_collided = False
+        self.has_been_close = False
         self.record_observer = None
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
@@ -309,6 +310,7 @@ class HitBallEnv(SingleArmEnv):
         if not self.has_collided:
             print('No contact')  # So we conclusively know it missed making contact
         self.has_collided = False
+        self.has_been_close = False
         self.record_observer = None
         return self.format_observation(obs)
 
@@ -322,14 +324,14 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             float: reward value
         """
-        r_vel, r_prox, r_contact = self.staged_rewards()
+        reward_pieces = self.staged_rewards()
         if self.reward_shaping:
-            reward = r_vel + r_prox + r_contact
+            reward = sum(reward_pieces)
         else:
-            reward = r_contact
+            reward = reward_pieces[-1]  # Last one is contact
 
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 2.0
+            reward *= self.reward_scale   # WTF? Why divide by 2?  / 2.0
 
         return reward
 
@@ -374,6 +376,19 @@ class HitBallEnv(SingleArmEnv):
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
+        # Ball position being in starting direction.
+        # To encourage it to hit the ball back in starting direction (+x)
+        r_ball_x = 0.
+        ball_pos = self.sim.data.body_xpos[self.ball_body_id]
+        ball_x = ball_pos[0]
+        CLOSE_THRESHOLD = 2.0  # m
+        if self.has_been_close and ball_x > CLOSE_THRESHOLD:
+            # Was inside thresh, is now outside thresh: it bounced off something 
+            ball_x_mult = 0.05
+            r_ball_x = (ball_x - CLOSE_THRESHOLD) * ball_x_mult
+        elif ball_x < CLOSE_THRESHOLD:
+            self.has_been_close = True
+
         # give big points for contact
         r_contact = 0.
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
@@ -385,7 +400,9 @@ class HitBallEnv(SingleArmEnv):
             else:
                 print('Contact again! (no reward)')
 
-        return reward_direction, r_prox, r_contact
+        reward_tuple = reward_direction, r_prox, r_ball_x, r_contact
+        #print('rewards', reward_tuple)
+        return reward_tuple
 
     def _load_model(self):
         """
@@ -511,7 +528,8 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             bool: True if contact is made
         """
-        _, _, r_contact = self.staged_rewards()
+        reward_pieces = self.staged_rewards()
+        r_contact = reward_pieces[-1]  # last one is contact
         return r_contact > 0
 
     def visualize(self, vis_settings):
