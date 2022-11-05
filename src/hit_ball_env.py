@@ -228,6 +228,7 @@ class HitBallEnv(SingleArmEnv):
         )
         self.camera_color=camera_color
         self.has_collided = False
+        self.record_observer = None
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
 
@@ -260,8 +261,9 @@ class HitBallEnv(SingleArmEnv):
             "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
             "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
         })
-        #for key,os in self.observation_space.items():
-        #    print(key, type(os), os.shape, os.dtype)
+
+    def set_record_observer(self, camname):
+        self.record_observer = camname
 
     def step(self, action):
         """
@@ -269,8 +271,8 @@ class HitBallEnv(SingleArmEnv):
         """
         self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
         obs, reward, done, info = super().step(action)
-        if 'followrobot' in self.camera_names:
-            info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name='followrobot'))}
+        if self.record_observer is not None and self.record_observer in self.camera_names:
+            info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name=self.record_observer))}
         return self.format_observation(obs), reward, done, info
 
     def reset(self):
@@ -279,6 +281,7 @@ class HitBallEnv(SingleArmEnv):
         """
         obs = super().reset()
         self.has_collided = False
+        self.record_observer = None
         return self.format_observation(obs)
 
     def reward(self, action):
