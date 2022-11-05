@@ -280,6 +280,8 @@ class HitBallEnv(SingleArmEnv):
         Overload the base class to process to observations.
         """
         obs = super().reset()
+        if not self.has_collided:
+            print('No contact')  # So we conclusively know it missed making contact
         self.has_collided = False
         self.record_observer = None
         return self.format_observation(obs)
