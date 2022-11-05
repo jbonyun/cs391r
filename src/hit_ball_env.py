@@ -358,7 +358,6 @@ class HitBallEnv(SingleArmEnv):
                 self.has_collided = True
             else:
                 print('Contact again! (no reward)')
-        if made_contact: print('Contact!')
 
         return reward_direction, r_prox, r_contact
 
