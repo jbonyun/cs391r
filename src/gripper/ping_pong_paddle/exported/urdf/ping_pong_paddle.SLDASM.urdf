@@ -2,7 +2,13 @@
 <!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
      Commit Version: 1.6.0-1-g15f4949  Build Version: 1.6.7594.29634
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
-<robot
+<robot>
+  <mujoco>
+    <compiler 
+    meshdir="../meshes/" 
+    balanceinertia="true" 
+    discardvisual="false" />
+  </mujoco>
   name="ping_pong_paddle.SLDASM">
   <link
     name="base_link">
@@ -26,7 +32,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://ping_pong_paddle.SLDASM/meshes/base_link.STL" />
+          filename="base_link.STL" />
       </geometry>
       <material
         name="">
@@ -40,7 +46,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://ping_pong_paddle.SLDASM/meshes/base_link.STL" />
+          filename="base_link.STL" />
       </geometry>
     </collision>
   </link>

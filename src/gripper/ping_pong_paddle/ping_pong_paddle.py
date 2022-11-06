@@ -1,21 +1,21 @@
 """
-Gripper without fingers to wipe a surface
+Ping pong paddle to hit a ball
 """
 from robosuite.models.grippers.gripper_model import GripperModel
 from robosuite.utils.mjcf_utils import xml_path_completion
 
 
-class BatOneGripper(GripperModel):
+class PingPongPaddleGripper(GripperModel):
     """
-    A BatOne Gripper with no actuation and enabled with sensors to detect contact forces
+    A Ping Pong Paddle Gripper with no actuation and enabled with sensors to detect contact forces
 
     Args:
         idn (int or str): Number or some other unique identification string for this gripper instance
     """
 
     def __init__(self, idn=0):
-        #super().__init__(xml_path_completion("bat_one_gripper.xml"), idn=idn)
-        super().__init__("gripper/cylindrical_bat/bat_one_gripper.xml", idn=idn)
+        #super().__init__(xml_path_completion("ping_pong_paddle_gripper.xml"), idn=idn)
+        super().__init__("gripper/ping_pong_paddle/ping_pong_paddle_gripper.xml", idn=idn)
 
     def format_action(self, action):
         return action
