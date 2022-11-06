@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import ipdb
 import math
+import random
 
 import numpy as np
 from xml.etree.ElementTree import Element
@@ -12,15 +13,16 @@ from robosuite.robots.robot import Robot
 from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
+from robosuite.utils.camera_utils import get_real_depth_map
 
 from space_arena import SpaceArena
 
-from gripper import BatOneGripper
+from gripper.cylindrical_bat import BatOneGripper
 from robosuite.models.grippers import GRIPPER_MAPPING
 GRIPPER_MAPPING['BatOneGripper'] = BatOneGripper
 
 from ping_pong_ball import PingPongBall
-from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
+from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory, OneOfN
 from deterministic_sampler import DeterministicSampler
 
 from gym.spaces import Box
@@ -168,10 +170,13 @@ class HitBallEnv(SingleArmEnv):
         camera_heights=256,
         camera_widths=256,
         camera_depths=False,
+        camera_color=True,
         camera_segmentations=None,  # {None, instance, class, element}
         renderer="mujoco",
         renderer_config=None,
     ):
+        np.random.seed()
+        random.seed()
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -184,14 +189,16 @@ class HitBallEnv(SingleArmEnv):
         self.placement_initializer = placement_initializer
 
         self.spawner = BallSpawner()
-        use_random_spawn = True  # False means a deterministic point and path, for testing.
+        use_random_spawn = False  # False means a deterministic point and path, for testing.
         if use_random_spawn:
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
             self.spawner.spd = SpeedSpawner(0.5, 0.7)
         else:
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
-            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+            #self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+            self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0),
+                                       CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)])
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
 
         super().__init__(
@@ -220,6 +227,10 @@ class HitBallEnv(SingleArmEnv):
             renderer=renderer,
             renderer_config=renderer_config,
         )
+        self.camera_color=camera_color
+        self.has_collided = False
+        self.has_been_close = False
+        self.record_observer = None
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
 
@@ -228,10 +239,27 @@ class HitBallEnv(SingleArmEnv):
         if not self.use_camera_obs:
             return state
         # else return image + joints
+        obs_cam = self.render_camera
         if self.camera_depths:
-            concat_image = np.concatenate((state["aboverobot_image"], state["aboverobot_depth"]), axis=2)
+            # Reprocess depth to have a max distance much closer than Mujoco's 145m.
+            # This matters bc Mujoco normalizes between 0 and 1, but since we have no
+            # background, it includes lots of points at 145m in the normalizing. Which
+            # squashes our relevant depths into nothingness.
+            dp = state[obs_cam+'_depth']
+            rd = get_real_depth_map(self.sim, dp)
+            MAX_DISTANCE = 10.  # In meters
+            rdcap = np.minimum(rd, MAX_DISTANCE)
+            dp = 1. - (rdcap / MAX_DISTANCE)
+            dp = (dp*255).astype(np.uint8)
+            if self.camera_color:
+                im = state[obs_cam+'_image']
+            else:
+                # Grayscale-D
+                im = np.expand_dims(np.mean(state[obs_cam+'_image'], axis=2), axis=2).astype(np.uint8)
+            #print('fmtobs im range',np.max(im), np.min(im), ' dp range',np.max(dp), np.min(dp))
+            concat_image = np.concatenate((im,dp), axis=2)
         else:
-            concat_image = state['aboverobot_image']
+            concat_image = state[obs_cam + '_image']
         return { "image":concat_image.astype(np.uint8),
                  "joints":state["robot0_proprio-state"]
         }
@@ -239,13 +267,15 @@ class HitBallEnv(SingleArmEnv):
     def format_spaces(self):
         self.action_space = Box(low=-1., high=1., shape=(6,), dtype=np.float32)
 
-        num_channels = 4 if self.camera_depths else 3
+        num_channels = 3 if self.camera_color else 1
+        num_channels += (1 if self.camera_depths else 0)
         self.observation_space =  spaces.Dict({
             "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
             "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
         })
-        #for key,os in self.observation_space.items():
-        #    print(key, type(os), os.shape, os.dtype)
+
+    def set_record_observer(self, camname):
+        self.record_observer = camname
 
     def step(self, action):
         """
@@ -253,15 +283,35 @@ class HitBallEnv(SingleArmEnv):
         """
         self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
         obs, reward, done, info = super().step(action)
-        if 'followrobot' in self.camera_names:
-            info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name='followrobot'))}
-        return self.format_observation(obs), reward, done, info
+        fmt_obs = self.format_observation(obs)
+        if self.record_observer is not None and self.record_observer in self.camera_names:
+            # Don't want to do this work unless we are told we will use it.
+            if self.record_observer == self.render_camera:
+                # Special case where we will render it exactly as seen by algo
+                obs_im = fmt_obs['image']
+                if obs_im.shape[2] == 1:
+                    info = {'observer': np.flipud(obs_im)}
+                elif obs_im.shape[2] == 2:
+                    info = {'observer': np.concatenate((np.flipud(obs_im[:,:,0]), np.flipud(obs_im[:,:,-1])), axis=0)}
+                elif obs_im.shape[2] == 3:
+                    info = {'observer': np.flipud(obs_im)}
+                elif obs_im.shape[2] == 4:
+                    info = {'observer': np.concatenate((np.flipud(obs_im[:,:,0:3]), np.tile(np.flipud(obs_im[:,:,-1]),(1,1,3))), axis=0)}
+            else:
+                # Render it pretty
+                info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name=self.record_observer))}
+        return fmt_obs, reward, done, info
 
     def reset(self):
         """
         Overload the base class to process to observations.
         """
         obs = super().reset()
+        if not self.has_collided:
+            print('No contact')  # So we conclusively know it missed making contact
+        self.has_collided = False
+        self.has_been_close = False
+        self.record_observer = None
         return self.format_observation(obs)
 
     def reward(self, action):
@@ -274,14 +324,14 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             float: reward value
         """
-        r_vel, r_contact = self.staged_rewards()
+        reward_pieces = self.staged_rewards()
         if self.reward_shaping:
-            reward = r_vel + r_contact
+            reward = sum(reward_pieces)
         else:
-            reward = r_contact
+            reward = reward_pieces[-1]  # Last one is contact
 
         if self.reward_scale is not None:
-            reward *= self.reward_scale / 2.0
+            reward *= self.reward_scale   # WTF? Why divide by 2?  / 2.0
 
         return reward
 
@@ -290,36 +340,70 @@ class HitBallEnv(SingleArmEnv):
         Helper function to calculate staged rewards based on current physical states.
 
         Returns:
-            2-tuple:
+            3-tuple:
 
-                - (float): reward proximity
+                - (float): reward for direction of motion
+                - (float): reward for proximity
                 - (float): reward for contact
         """
-        # Calculate direction from gripper to ball
+        reward_direction_scale = 0.05 #1.0
+        if reward_direction_scale != 0.0:
+            # Calculate direction from gripper to ball
+            ball_pos = self.sim.data.body_xpos[self.ball_body_id]
+            gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+            direction = ball_pos - gripper_site_pos
+
+            # normalize. Account for 0 norm
+            norm = np.linalg.norm(direction)
+            unit_direction = direction / norm
+
+            # find gripper velocity. Norm it
+            gripper_velocity = self.sim.data.site_xvelp[self.robots[0].eef_site_id]
+            gripper_velocity_norm = np.linalg.norm(gripper_velocity)
+            unit_gripper_velocity = gripper_velocity / gripper_velocity_norm
+
+            # take dot product. IF either norm is 0, thne the result is undefined. Use 0.0 as reward
+            reward_direction = np.dot(unit_direction,unit_gripper_velocity)
+            if norm == 0.0 or gripper_velocity_norm == 0.0:
+                reward_direction = 0.0
+            reward_direction *= reward_direction_scale
+        else:
+            reward_direction = 0.
+
+        # Proximity to the ball
+        # Was from the stacking task; scale 0.25 to 20
+        prox_dist_scale = 2.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
+        prox_mult_scale = 1. #0.25
+        dist = np.linalg.norm(gripper_site_pos - ball_pos)
+        r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
+
+        # Ball position being in starting direction.
+        # To encourage it to hit the ball back in starting direction (+x)
+        r_ball_x = 0.
         ball_pos = self.sim.data.body_xpos[self.ball_body_id]
-        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
-        direction = ball_pos - gripper_site_pos
-
-        # normalize. Account for 0 norm
-        norm = np.linalg.norm(direction)
-        unit_direction = direction / norm
-
-        # find gripper velocity. Norm it
-        gripper_velocity = self.sim.data.site_xvelp[self.robots[0].eef_site_id]
-        gripper_velocity_norm = np.linalg.norm(gripper_velocity)
-        unit_gripper_velocity = gripper_velocity / gripper_velocity_norm
-
-        # take dot product. IF either norm is 0, thne the result is undefined. Use 0.0 as reward
-        reward_direction = np.dot(unit_direction,unit_gripper_velocity)
-        if norm == 0.0 or gripper_velocity_norm == 0.0:
-            reward_direction = 0.0
+        ball_x = ball_pos[0]
+        CLOSE_THRESHOLD = 1.5  # m
+        if self.has_been_close and ball_x > CLOSE_THRESHOLD:
+            # Was inside thresh, is now outside thresh: it bounced off something 
+            ball_x_mult = 0.05
+            r_ball_x = (ball_x - CLOSE_THRESHOLD) * ball_x_mult
+        elif ball_x < CLOSE_THRESHOLD:
+            self.has_been_close = True
 
         # give big points for contact
+        r_contact = 0.
         made_contact = self.check_contact(self.ball, self.robots[0].gripper)
-        r_contact = 200.0 if made_contact else 0.0
-        if made_contact: print('Contact!')
+        if made_contact:
+            if not self.has_collided:
+                print('Contact!')
+                r_contact = 100.
+                self.has_collided = True
+            else:
+                print('Contact again! (no reward)')
 
-        return reward_direction, r_contact
+        reward_tuple = reward_direction, r_prox, r_ball_x, r_contact
+        #print('rewards', reward_tuple)
+        return reward_tuple
 
     def _load_model(self):
         """
@@ -358,6 +442,8 @@ class HitBallEnv(SingleArmEnv):
         # Tweak it in ways that can't be done before the merging done in Task class.
         # Disable gravity by setting it to zero acceleration in x/y/z
         self.model.root.find('option').attrib['gravity'] = '0 0 0'
+        self.model.root.find('option').attrib['density'] = '0'
+        self.model.root.find('option').attrib['viscosity'] = '0'
         self.model.actuator.append(self.ball.create_shooter())
         # Add a focal point for the camera
         site_el = Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
@@ -443,7 +529,8 @@ class HitBallEnv(SingleArmEnv):
         Returns:
             bool: True if contact is made
         """
-        _, r_contact = self.staged_rewards()
+        reward_pieces = self.staged_rewards()
+        r_contact = reward_pieces[-1]  # last one is contact
         return r_contact > 0
 
     def visualize(self, vis_settings):
