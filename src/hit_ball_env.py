@@ -382,7 +382,7 @@ class HitBallEnv(SingleArmEnv):
         r_ball_x = 0.
         ball_pos = self.sim.data.body_xpos[self.ball_body_id]
         ball_x = ball_pos[0]
-        CLOSE_THRESHOLD = 2.0  # m
+        CLOSE_THRESHOLD = 1.5  # m
         if self.has_been_close and ball_x > CLOSE_THRESHOLD:
             # Was inside thresh, is now outside thresh: it bounced off something 
             ball_x_mult = 0.05
