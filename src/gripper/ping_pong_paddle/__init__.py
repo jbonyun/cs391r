@@ -1,0 +1,1 @@
+from .ping_pong_paddle import PingPongPaddleGripper
