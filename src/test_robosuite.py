@@ -8,8 +8,9 @@ import xml.etree.ElementTree as ET
 from robosuite.models import MujocoWorldBase
 from robosuite.utils.mjcf_utils import array_to_string
 
-from gripper.cylinderical_bat import BatOneGripper
+from gripper.cylindrical_bat import BatOneGripper
 from ball_spawn import BallSpawner, BoxInSpace, CircleInSpace, SpeedSpawner, BallTrajectory
+from ping_pong_ball import PingPongBall
 
 world = MujocoWorldBase()
 
@@ -40,55 +41,33 @@ world.merge(mujoco_robot)
 
 
 # Disable gravity by setting it to zero acceleration in x/y/z
-world.option.attrib['gravity'] = '0 0 0'
-
-from robosuite.models.objects import BallObject
-class Ball(BallObject):
-    MASS = 0.0027    # kg, official ping pong ball = 2.7g
-    RADIUS = 0.02    # m, official ping pong ball = 40mm diameter
-    ball_count = 0   # global count of the number of Ball objects we have, so they can have unique names.
-    def __init__(self, world, trajectory):
-        self.index = Ball.ball_count  # Remember and update the global object count.
-        Ball.ball_count = self.index + 1
-        super().__init__(
-            name='ball{}'.format(self.index),
-            size=[Ball.RADIUS],
-            rgba=[0, 0.5, 0.5, 1],
-            solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
-            density=self.density(),
-            )
-        self.trajectory = trajectory
-        self.get_obj().set('pos', array_to_string(self.trajectory.origin))  # Set initial position.
-        self.shooter = ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.index), 'site': 'ball{}_default_site'.format(self.index), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
-        self.actuator_id = len(world.actuator)  # Assumes that assigne actuator id is where it appears in the xml list.
-        world.actuator.append(self.shooter)     # Add the shooter to the xml.
-        world.worldbody.append(self.get_obj())  # Add the ball object to the xml.
-    def volume(self):
-        """Volume of the ball, m^3"""
-        return Ball.RADIUS**3 * math.pi * 4./3.
-    def density(self):
-        """Density of the ball, kg/m^3"""
-        return Ball.MASS / self.volume()
-    def shooter_force(self):
-        """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
-        return self.trajectory.speed * Ball.MASS / float(world.option.get('timestep'))
-    def set_shooter_control(self, sim, set_to=None):
-        """Apply the shooter_force to the actuator that will push this ball"""
-        sim.data.ctrl[self.actuator_id] = (self.shooter_force() if set_to is None else set_to)
+#world.option.attrib['gravity'] = '0 0 0'
 
 spawner = BallSpawner()
-spawner.src = BoxInSpace([5, 0, 2], None, 2, 4, 3)
-spawner.tgt = CircleInSpace((0,0,1), (1,0,0), (0,1,0), 1.*math.pi, 1.)
-spawner.spd = SpeedSpawner(1.0, 2.0)
+use_random_spawn = True  # False means a deterministic point and path, for testing.
+if use_random_spawn:
+    spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
+    spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
+    spawner.spd = SpeedSpawner(0.5, 0.7)
+else:
+    spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
+    #spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+    spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0),
+                               CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)])
+    spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
 
-#ball = Ball(world, spawner.random())
 NUM_BALLS = 25
-balls = [Ball(world, spawner.random()) for bi in range(NUM_BALLS)]
+balls = [PingPongBall(spawner.random(), timestep, str(bi)) for bi in range(NUM_BALLS)]
+for ball in balls:
+    world.actuator.append(ball.create_shooter())
+
+site_el = ET.Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
+world.worldbody.append(site_el)
 
 # Convert the xml that robosuite has managed into a real mujoco object
 model = world.get_model(mode="mujoco_py")
 
-#ipdb.set_trace()
+ipdb.set_trace()
 
 from mujoco_py import MjSim, MjViewer
 sim = MjSim(model)
@@ -104,6 +83,6 @@ for i in range(10000):
             sim.data.ctrl[sim.model.actuator_name2id('robot0_torq_j{}'.format(joint_i+1))] = np.random.normal(0, 0.2)
     # Set ball actuation force. Zero except for first frame.
     for ball in balls:
-        ball.set_shooter_control(sim, ball.shooter_force() if i == 0 else 0.)
+        ball.set_shooter_control(sim, None if i == 0 else 0.)
     sim.step()
     viewer.render()
