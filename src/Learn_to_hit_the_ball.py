@@ -154,7 +154,7 @@ if __name__ == '__main__':
     print(agent.policy)
 
     # learn
-    expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105}.get(num_env, 105)
+    expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
     approx_seconds_to_run = 60*60*24
     steps_to_run = expected_fps * approx_seconds_to_run
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
