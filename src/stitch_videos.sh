@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ $# -le 1 ]; then
+if [ $# -lt 1 ]; then
     NUM="4"
 else
     NUM=$1
