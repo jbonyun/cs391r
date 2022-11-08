@@ -346,7 +346,7 @@ class HitBallEnv(SingleArmEnv):
                 - (float): reward for proximity
                 - (float): reward for contact
         """
-        reward_direction_scale = 0.05 #1.0
+        reward_direction_scale = 0.001 #1.0
         if reward_direction_scale != 0.0:
             # Calculate direction from gripper to ball
             ball_pos = self.sim.data.body_xpos[self.ball_body_id]
@@ -373,7 +373,7 @@ class HitBallEnv(SingleArmEnv):
         # Proximity to the ball
         # Was from the stacking task; scale 0.25 to 20
         prox_dist_scale = 2.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
-        prox_mult_scale = 1. #0.25
+        prox_mult_scale = 0.01 #0.25
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
@@ -385,7 +385,7 @@ class HitBallEnv(SingleArmEnv):
         CLOSE_THRESHOLD = 1.5  # m
         if self.has_been_close and ball_x > CLOSE_THRESHOLD:
             # Was inside thresh, is now outside thresh: it bounced off something 
-            ball_x_mult = 0.05
+            ball_x_mult = 0.15
             r_ball_x = (ball_x - CLOSE_THRESHOLD) * ball_x_mult
         elif ball_x < CLOSE_THRESHOLD:
             self.has_been_close = True
@@ -396,7 +396,7 @@ class HitBallEnv(SingleArmEnv):
         if made_contact:
             if not self.has_collided:
                 print('Contact!')
-                r_contact = 100.
+                r_contact = 10.
                 self.has_collided = True
             else:
                 print('Contact again! (no reward)')
