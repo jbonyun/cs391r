@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import collections
+from datetime import datetime
 import imageio
 import ipdb
 import math
@@ -60,8 +61,13 @@ if __name__ == '__main__':
     #print("AS = ", venv.action_space)
 
     class SaveAfterEpisodeCallback(BaseCallback):
+        def __init__(self, episode_len_steps, num_envs, rollouts_per_save):
+            super().__init__()
+            self.ep_len = episode_len_steps
+            self.num_envs = num_envs
+            self.rollouts_per_save = rollouts_per_save
         def on_rollout_end(self):
-            if self.num_timesteps % (horizon*6) == 0:
+            if self.num_timesteps % (self.ep_len*self.num_envs*self.rollouts_per_save) == 0:
                 print('Episode+Rollout end +Save')
                 self.model.save('save_checkpoint.model')
                 print('Checkpoint saved')
@@ -85,11 +91,13 @@ if __name__ == '__main__':
             return True
 
     class RewardPrintCallback(BaseCallback):
-        def __init__(self, episode_len_steps, history_len_episodes, num_envs):
+        def __init__(self, episode_len_steps, history_len_episodes, num_envs, log_fname=None, log_ep=None):
             super().__init__()
             self.d = collections.deque([], int(np.ceil(history_len_episodes * episode_len_steps / num_envs)))
             self.ep_len = episode_len_steps
             self.num_envs = num_envs
+            self.log_filename = log_fname
+            self.log_ep = log_ep
         def _on_step(self):
             self.d.append(self.locals['rewards'])
             if (self.num_timesteps / self.num_envs) % self.ep_len == 0:
@@ -97,7 +105,19 @@ if __name__ == '__main__':
                 mean = np.mean(all_data) * self.ep_len  # across both dimensions
                 num_ep = np.product(all_data.shape) / self.ep_len
                 print('Mean reward over {:d} episodes: {:.4}'.format(int(num_ep), mean))
+            if (self.num_timesteps / self.num_envs) % self.log_ep == 0:
+                all_data = np.vstack(self.d)
+                mean = np.mean(all_data) * self.ep_len  # across both dimensions
+                num_ep = np.product(all_data.shape) / self.ep_len
+                print('Updating reward log')
+                with open(self.log_filename, 'a') as f:
+                    f.write('{},{},{}\n'.format(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'), self.num_timesteps, mean))
+                print('Mean reward over {:d} episodes: {:.4}'.format(int(num_ep), mean))
             return True
+        def set_log_on_n_episodes(self, fname, n_ep):
+            self.log_filename = fname
+            self.log_ep = n_ep
+
 
     class MakeVideoCallback(BaseCallback):
         def __init__(self, fname, camname, envs, fps=30, verbose=0, num_envs=1, rollout_period=1):
@@ -158,5 +178,6 @@ if __name__ == '__main__':
     approx_seconds_to_run = 60*60*24
     steps_to_run = expected_fps * approx_seconds_to_run
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
-    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(), ActionNormPrintCallback(horizon,num_env), RewardPrintCallback(horizon, num_env*5, num_env), vid]))
+    rew = RewardPrintCallback(horizon, num_env*25, num_env, 'reward.log', num_env*10)
+    agent.learn(steps_to_run, callback=CallbackList([SaveAfterEpisodeCallback(horizon,num_env,3), rew, vid]))
 
