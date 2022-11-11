@@ -197,8 +197,10 @@ class HitBallEnv(SingleArmEnv):
         else:
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
             #self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
-            self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0),
-                                       CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)])
+            #self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
+            TARGET_RADIUS = 0.50  #0.0
+            self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS),
+                                       CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS)])
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
 
         super().__init__(
