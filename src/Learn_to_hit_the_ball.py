@@ -51,12 +51,16 @@ def make_env():
 
 
 class SaveAfterEpisodeCallback(BaseCallback):
-    def __init__(self, episode_len_steps, num_envs, rollouts_per_save):
+    def __init__(self, episode_len_steps, num_envs, rollouts_per_save, rollouts_per_bigsave=None):
         super().__init__()
         self.ep_len = episode_len_steps
         self.num_envs = num_envs
         self.rollouts_per_save = rollouts_per_save
+        self.rollouts_per_bigsave = rollouts_per_bigsave
     def on_rollout_end(self):
+        if self.rollouts_per_bigsave is not None and self.num_timesteps % (self.ep_len*self.num_envs*self.rollouts_per_bigsave) == 0:
+            print('BIGSAVE')
+            self.model.save('save_checkpoint_{}.model'.format(self.num_timesteps))
         if self.num_timesteps % (self.ep_len*self.num_envs*self.rollouts_per_save) == 0:
             print('Episode+Rollout end +Save')
             self.model.save('save_checkpoint.model')
@@ -190,7 +194,8 @@ if __name__ == '__main__':
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
     rew = RewardPrintCallback(horizon, num_env*25, num_env, 'reward.log', num_env*10)
     varsched = VarianceScheduler(venv, horizon, 64)
-    callbacks = [SaveAfterEpisodeCallback(horizon,num_env,3), rew, vid, varsched]
+    savemod = SaveAfterEpisodeCallback(horizon,num_env,3,500)
+    callbacks = [savemod, rew, vid, varsched]
 
     # learn
     expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
