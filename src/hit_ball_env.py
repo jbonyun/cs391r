@@ -198,7 +198,7 @@ class HitBallEnv(SingleArmEnv):
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
             #self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
             #self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
-            TARGET_RADIUS = 0.50  #0.0
+            TARGET_RADIUS = 0.10  #0.0
             self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS),
                                        CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS)])
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
@@ -235,6 +235,18 @@ class HitBallEnv(SingleArmEnv):
         self.record_observer = None
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
+
+    def grow_variance(self, num_eps):
+        grow_rate = 1. + 1. / (num_eps)**0.7
+        if isinstance(self.spawner.tgt, OneOfN):
+            print('Growing variance of target at', grow_rate)
+            for n in self.spawner.tgt.things:
+                n.radius *= grow_rate
+        elif isinstance(self.spawner.tgt, CircleInSpace):
+            print('Growing variance of target at', grow_rate)
+            self.spawner.tgt.radius *= grow_rate
+        else:
+            print('Dont know how to grow variance')
 
     def format_observation(self, state):
         # if no camera, do nothing

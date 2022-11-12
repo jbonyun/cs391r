@@ -153,6 +153,21 @@ class MakeVideoCallback(BaseCallback):
             self.vid[i] = None
         self.vid = []
 
+class VarianceScheduler(BaseCallback):
+    def __init__(self, venv, episode_len_steps, eps_per_escal):
+        super().__init__()
+        self.venv = venv
+        self.ep_len = episode_len_steps
+        self.eps_per_escal = eps_per_escal
+        self.steps_next_escal = self.eps_per_escal * self.ep_len
+    def on_rollout_end(self):
+        if self.num_timesteps >= self.steps_next_escal:
+            self.steps_next_escal = self.num_timesteps + self.eps_per_escal * self.ep_len
+            num_eps = self.num_timesteps / self.ep_len
+            venv.env_method('grow_variance', num_eps)
+    def _on_step(self):
+        pass
+
 
 if __name__ == '__main__':
     # Create vectorized environments
@@ -174,7 +189,8 @@ if __name__ == '__main__':
     # Prepare callbacks
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
     rew = RewardPrintCallback(horizon, num_env*25, num_env, 'reward.log', num_env*10)
-    callbacks = [SaveAfterEpisodeCallback(horizon,num_env,3), rew, vid]
+    varsched = VarianceScheduler(venv, horizon, 64)
+    callbacks = [SaveAfterEpisodeCallback(horizon,num_env,3), rew, vid, varsched]
 
     # learn
     expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
