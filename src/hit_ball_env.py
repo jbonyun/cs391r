@@ -388,7 +388,7 @@ class HitBallEnv(SingleArmEnv):
         # Proximity to the ball
         # Was from the stacking task; scale 0.25 to 20
         prox_dist_scale = 2.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
-        prox_mult_scale = 0.001 #0.25
+        prox_mult_scale = 0.005 #0.25
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
@@ -411,7 +411,7 @@ class HitBallEnv(SingleArmEnv):
         if made_contact:
             if not self.has_collided:
                 print('Contact!')
-                r_contact = 1.
+                r_contact = 0.1
                 self.has_collided = True
             else:
                 print('Contact again! (no reward)')
