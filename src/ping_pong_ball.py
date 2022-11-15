@@ -7,11 +7,12 @@ from ball_spawn import BallTrajectory
 class PingPongBall(BallObject):
     MASS = 0.0027    # kg, official ping pong ball = 2.7g
     RADIUS = 0.20    # m, official ping pong ball = 40mm diameter
-    def __init__(self, trajectory: BallTrajectory, timestep, name_suffix='0'):
+    def __init__(self, trajectory: BallTrajectory, timestep, name_suffix='0', radius=RADIUS):
         self.name_suffix = str(name_suffix)
+        self.radius = radius
         super().__init__(
             name='ball{}'.format(self.name_suffix),
-            size=[PingPongBall.RADIUS],
+            size=[radius],
             rgba=[0, 0.5, 0.5, 1],
             solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
             density=self.density(),
@@ -23,7 +24,7 @@ class PingPongBall(BallObject):
         self.actuator_id = None
     def volume(self):
         """Volume of the ball, m^3"""
-        return PingPongBall.RADIUS**3 * math.pi * 4./3.
+        return self.radius**3 * math.pi * 4./3.
     def density(self):
         """Density of the ball, kg/m^3"""
         return PingPongBall.MASS / self.volume()
