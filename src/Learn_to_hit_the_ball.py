@@ -188,7 +188,8 @@ if __name__ == '__main__':
     if load_filename is not None:
         agent = RecurrentPPO.load(load_filename, venv, verbose=1, n_steps=horizon)
     else:
-        agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1, n_steps=horizon)
+        policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
+        agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
     print(agent.policy)
 
     # Prepare callbacks
