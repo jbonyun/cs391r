@@ -178,6 +178,8 @@ class HitBallEnv(SingleArmEnv):
         np.random.seed()
         random.seed()
 
+        self.ball_radius = 0.20   # in meters; radius not diameter; ping pong is 0.02
+
         # reward configuration
         self.reward_scale = reward_scale
         self.reward_shaping = reward_shaping
@@ -434,7 +436,7 @@ class HitBallEnv(SingleArmEnv):
 
         mujoco_objects = MujocoWorldBase()
         # Make a ball. It merges itself to the world you give it.
-        self.ball = PingPongBall(self.spawner.random(), 1./self.control_freq)
+        self.ball = PingPongBall(self.spawner.random(), 1./self.control_freq, radius=self.ball_radius)
 
         # Create placement initializer
         if self.placement_initializer is not None:
