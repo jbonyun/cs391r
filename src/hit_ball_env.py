@@ -249,6 +249,13 @@ class HitBallEnv(SingleArmEnv):
             self.spawner.tgt.radius *= grow_rate
         else:
             print('Dont know how to grow variance')
+    def shrink_ball(self, num_eps):
+        #self.ball_radius = self.ball_radius   # NOP, as example
+        MIN_SIZE = 0.02
+        MAX_SIZE = 0.20
+        HALFLIFE_EPS = 20000
+        self.ball_radius = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * 0.5**(float(num_eps) / float(HALFLIFE_EPS))
+        print('Ball radius set to', self.ball_radius)
 
     def format_observation(self, state):
         # if no camera, do nothing
