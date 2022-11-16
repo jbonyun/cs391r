@@ -214,7 +214,7 @@ if __name__ == '__main__':
     vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
     rew = RewardPrintCallback(horizon, num_env*25, num_env, 'reward.log', num_env*10)
     varsched = VarianceScheduler(venv, horizon, 64)
-    savemod = SaveAfterEpisodeCallback(horizon,num_env,3,500)
+    savemod = SaveAfterEpisodeCallback(horizon,num_env,3,100)
     callbacks = [savemod, rew, vid, varsched]
 
     # learn
