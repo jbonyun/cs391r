@@ -172,7 +172,7 @@ class VarianceScheduler(BaseCallback):
         if self.num_timesteps >= self.steps_next_escal:
             self.steps_next_escal = self.num_timesteps + self.eps_per_escal * self.ep_len
             num_eps = self.num_timesteps / self.ep_len
-            venv.env_method('grow_variance', num_eps)
+            #venv.env_method('grow_variance', num_eps)
             venv.env_method('shrink_ball', num_eps)
     def _on_step(self):
         pass
