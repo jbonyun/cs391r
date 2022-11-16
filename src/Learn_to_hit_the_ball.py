@@ -11,7 +11,7 @@ import sys
 from stable_baselines3 import PPO
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
-from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
+from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecFrameStack
 
 from hit_ball_env import HitBallEnv
 from custom_extractors import CombinedExtractorDilatedCNN
