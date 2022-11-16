@@ -12,6 +12,7 @@ from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
 
 from hit_ball_env import HitBallEnv
+from custom_extractors import CombinedExtractorDilatedCNN
 
 
 # Control whether to do onscreen or offscreen.
