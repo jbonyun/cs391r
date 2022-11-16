@@ -7,6 +7,8 @@ import ipdb
 import math
 import numpy as np
 import sys
+
+from stable_baselines3 import PPO
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv
@@ -21,11 +23,12 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
-
-num_env = 3
+algo = 'RecurrentPPO'
+num_env = 24
 control_freq = 15
 horizon = 64
 video_period = 10
+video_dim = 84 # For both height and width; 84 is default
 
 def make_env():
     return HitBallEnv(
@@ -43,8 +46,8 @@ def make_env():
         control_freq = control_freq, # Hz of controller being called
         horizon = horizon,           # Number of control steps in an episode (not seconds, not time steps, but control steps)
         camera_names = ['aboverobot', 'followrobot'],   # Cameras to be used for observations to controller
-        camera_heights = 84,  # 84 was default, but our ball is small and hard to see
-        camera_widths = 84,
+        camera_heights = video_dim,  # 84 was default, but our ball is small and hard to see
+        camera_widths = video_dim,
         camera_depths = True,   # True if you want RGB-D cameras
         camera_color = False,
         # There are more optional args, but I didn't think them relevant.
@@ -186,11 +189,25 @@ if __name__ == '__main__':
     # Prepare agent
     load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
-    if load_filename is not None:
-        agent = RecurrentPPO.load(load_filename, venv, verbose=1, n_steps=horizon)
+    if algo == 'PPO':
+        # Stack frames with an environment wrapper
+        venv = VecFrameStack(venv, n_stack=4)
+        if load_filename is not None:
+            agent = PPO.load(load_filename, venv, verbose=1, n_steps=horizon)
+        else:
+            # Override default network for something that preserves location
+            policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
+            agent = PPO("MultiInputPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
+    elif algo == 'RecurrentPPO':
+        if load_filename is not None:
+            agent = RecurrentPPO.load(load_filename, venv, verbose=1, n_steps=horizon)
+        else:
+            # Override default network for something that preserves location
+            policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
+            agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
     else:
-        policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
-        agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
+        raise Exception('Bad algo type: ' + str(algo))
+
     print(agent.policy)
 
     # Prepare callbacks
