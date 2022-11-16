@@ -435,7 +435,7 @@ class HitBallEnv(SingleArmEnv):
         """
         mujoco_arena = MujocoWorldBase()
         from robosuite.models.base import MujocoXML
-        xml = MujocoXML('empty_space.xml')
+        xml = MujocoXML('empty_arena.xml')
         mujoco_arena.merge(xml)
         #mujoco_arena = SpaceArena()
 
