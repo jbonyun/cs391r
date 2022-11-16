@@ -232,6 +232,8 @@ class HitBallEnv(SingleArmEnv):
             renderer_config=renderer_config,
         )
         self.camera_color=camera_color
+        self.contact_prev_step = False
+        self.contact_during_step = False
         self.has_collided = False
         self.has_been_close = False
         self.record_observer = None
@@ -304,6 +306,8 @@ class HitBallEnv(SingleArmEnv):
         """
         Overload the base class just to trigger the ball to shoot
         """
+        self.contact_prev_step = self.contact_during_step
+        self.contact_during_step = False  # Reset contact detection
         self.ball.set_shooter_control(self.sim, None if self.timestep == 0 else 0.)
         obs, reward, done, info = super().step(action)
         fmt_obs = self.format_observation(obs)
@@ -332,6 +336,8 @@ class HitBallEnv(SingleArmEnv):
         obs = super().reset()
         if not self.has_collided:
             print('No contact')  # So we conclusively know it missed making contact
+        self.contact_prev_step = False
+        self.contact_during_step = False
         self.has_collided = False
         self.has_been_close = False
         self.record_observer = None
@@ -416,14 +422,20 @@ class HitBallEnv(SingleArmEnv):
 
         # give big points for contact
         r_contact = 0.
-        made_contact = self.check_contact(self.ball, self.robots[0].gripper)
+        #made_contact = self.check_contact(self.ball, self.robots[0].gripper)
+        made_contact = self.contact_during_step
         if made_contact:
             if not self.has_collided:
-                print('Contact!')
+                if not self.check_contact(self.ball, self.robots[0].gripper):
+                    print('Contact! (between control steps)')
+                else:
+                    print('Contact!')
                 r_contact = 0.1
                 self.has_collided = True
+            elif self.contact_prev_step:
+                print('No reward contact (continued)')
             else:
-                print('Contact again! (no reward)')
+                print('No reward contact (repeated discrete)')
 
         reward_tuple = reward_direction, r_prox, r_ball_x, r_contact
         #print('rewards', reward_tuple)
@@ -545,6 +557,15 @@ class HitBallEnv(SingleArmEnv):
                 )
 
         return observables
+
+    def _update_observables(self, force=False):
+        """
+        Runs after every mujoco timestep (not control timestep).
+        A good place to keep track of contact!
+        """
+        super()._update_observables(force)
+        curr_ball_contact = self.check_contact(self.ball, self.robots[0].gripper)
+        self.contact_during_step = self.contact_during_step or curr_ball_contact
 
     def _check_success(self):
         """
