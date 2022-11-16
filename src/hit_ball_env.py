@@ -262,7 +262,10 @@ class HitBallEnv(SingleArmEnv):
     def format_observation(self, state):
         # if no camera, do nothing
         if not self.use_camera_obs:
-            return state
+            #return state
+            return { 'objects': state['object-state'],
+                     'joints': state['robot0_proprio-state']
+            }
         # else return image + joints
         obs_cam = self.render_camera
         if self.camera_depths:
@@ -292,12 +295,18 @@ class HitBallEnv(SingleArmEnv):
     def format_spaces(self):
         self.action_space = Box(low=-1., high=1., shape=(6,), dtype=np.float32)
 
-        num_channels = 3 if self.camera_color else 1
-        num_channels += (1 if self.camera_depths else 0)
-        self.observation_space =  spaces.Dict({
-            "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
-            "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
-        })
+        if self.use_camera_obs:
+            num_channels = 3 if self.camera_color else 1
+            num_channels += (1 if self.camera_depths else 0)
+            self.observation_space =  spaces.Dict({
+                "image": Box(low=0, high=255, shape=(self.camera_widths[0], self.camera_heights[0], num_channels), dtype=np.uint8),
+                "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
+            })
+        elif self.use_object_obs:
+            self.observation_space =  spaces.Dict({
+                "objects": Box(low=-1., high=1., shape=(6,), dtype=np.float32),
+                "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
+            })
 
     def set_record_observer(self, camname):
         self.record_observer = camname
