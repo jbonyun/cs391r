@@ -192,7 +192,7 @@ class HitBallEnv(SingleArmEnv):
 
         self.spawner = BallSpawner()
         ball_spawn_type = 'one'   # full, one, two
-        TARGET_RADIUS = 0.10  #0.0
+        TARGET_RADIUS = 0.0
         if ball_spawn_type == 'full':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
@@ -259,8 +259,8 @@ class HitBallEnv(SingleArmEnv):
             print('Dont know how to grow variance')
     def shrink_ball(self, num_eps):
         #self.ball_radius = self.ball_radius   # NOP, as example
-        MIN_SIZE = 0.02
-        MAX_SIZE = 0.20
+        MIN_SIZE = 0.02 #0.02
+        MAX_SIZE = 0.10
         HALFLIFE_EPS = 20000
         self.ball_radius = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * 0.5**(float(num_eps) / float(HALFLIFE_EPS))
         print('Ball radius set to', self.ball_radius)
@@ -445,7 +445,7 @@ class HitBallEnv(SingleArmEnv):
                     print('Contact! (between control steps)')
                 else:
                     print('Contact!')
-                r_contact = 0.1
+                r_contact = 1.0
                 self.has_collided = True
             elif self.contact_prev_step:
                 print('No reward contact (continued)')

@@ -24,7 +24,7 @@ on_screen_render = False
 matplotlib_display = True and not on_screen_render
 
 algo = 'RecurrentPPO'
-inputs = 'high-d'
+inputs = 'low-d'  # high-d or low-d
 num_env = 24
 control_freq = 15
 horizon = 64
