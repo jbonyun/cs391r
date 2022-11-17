@@ -191,19 +191,25 @@ class HitBallEnv(SingleArmEnv):
         self.placement_initializer = placement_initializer
 
         self.spawner = BallSpawner()
-        use_random_spawn = False  # False means a deterministic point and path, for testing.
-        if use_random_spawn:
+        ball_spawn_type = 'one'   # full, one, two
+        TARGET_RADIUS = 0.10  #0.0
+        if ball_spawn_type == 'full':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
             self.spawner.spd = SpeedSpawner(0.5, 0.7)
-        else:
+        elif ball_spawn_type == 'one':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
-            #self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
-            #self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, 0.0)  # No randomness
-            TARGET_RADIUS = 0.10  #0.0
-            self.spawner.tgt = OneOfN([CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS),
-                                       CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS)])
+            self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
+        elif ball_spawn_type == 'two':
+            self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
+            self.spawner.tgt = OneOfN([
+                CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS),
+                CircleInSpace((0,0.5,0), (1,0,0), (0,1,0), 2.*math.pi, TARGET_RADIUS)
+            ])
+            self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
+        else:
+            raise Exception('Bad ball_spawn_type: ' + str(ball_spawn_type))
 
         super().__init__(
             robots=robots,
