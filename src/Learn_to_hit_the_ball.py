@@ -24,6 +24,7 @@ on_screen_render = False
 matplotlib_display = True and not on_screen_render
 
 algo = 'RecurrentPPO'
+inputs = 'high-d'
 num_env = 24
 control_freq = 15
 horizon = 64
@@ -36,7 +37,8 @@ def make_env():
         env_configuration = ['default'],    # positions
         controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
-        use_camera_obs = True,  # True means controller will be given camera inputs
+        use_camera_obs = (inputs == 'high-d'),  # True means controller will be given camera inputs
+        use_object_obs = (inputs == 'low-d'),  # True means use the low-d loc of ball and gripper
         reward_shaping = True,   # Whether to offer partial rewards for partial success
         has_renderer = False,    # True means you will see the visuals; can't be both on and off screen though.
         has_offscreen_renderer = True,    # Required if you want camera observations for the controller.
@@ -189,21 +191,25 @@ if __name__ == '__main__':
     # Prepare agent
     load_filename = sys.argv[1] if len(sys.argv) > 1 else None
 
+    if inputs == 'high-d':
+        # Override default network for something that preserves location
+        policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
+    elif inputs == 'low-d':
+        policy_kwargs = {}
+    else:
+        raise Exception('Bad inputs type: ' + str(inputs))
+
     if algo == 'PPO':
         # Stack frames with an environment wrapper
         venv = VecFrameStack(venv, n_stack=4)
         if load_filename is not None:
             agent = PPO.load(load_filename, venv, verbose=1, n_steps=horizon)
         else:
-            # Override default network for something that preserves location
-            policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
             agent = PPO("MultiInputPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
     elif algo == 'RecurrentPPO':
         if load_filename is not None:
             agent = RecurrentPPO.load(load_filename, venv, verbose=1, n_steps=horizon)
         else:
-            # Override default network for something that preserves location
-            policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
             agent = RecurrentPPO("MultiInputLstmPolicy", venv, verbose=1, n_steps=horizon, policy_kwargs=policy_kwargs)
     else:
         raise Exception('Bad algo type: ' + str(algo))
