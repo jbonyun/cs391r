@@ -284,7 +284,7 @@ class HitBallEnv(SingleArmEnv):
             # squashes our relevant depths into nothingness.
             dp = state[obs_cam+'_depth']
             rd = get_real_depth_map(self.sim, dp)
-            MAX_DISTANCE = 10.  # In meters
+            MAX_DISTANCE = 6.  # In meters
             rdcap = np.minimum(rd, MAX_DISTANCE)
             dp = 1. - (rdcap / MAX_DISTANCE)
             dp = (dp*255).astype(np.uint8)
