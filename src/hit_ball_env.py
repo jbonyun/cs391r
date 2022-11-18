@@ -15,8 +15,6 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.utils.camera_utils import get_real_depth_map
 
-from space_arena import SpaceArena
-
 from gripper.cylindrical_bat import BatOneGripper
 from robosuite.models.grippers import GRIPPER_MAPPING
 GRIPPER_MAPPING['BatOneGripper'] = BatOneGripper
@@ -469,7 +467,6 @@ class HitBallEnv(SingleArmEnv):
         from robosuite.models.base import MujocoXML
         xml = MujocoXML('empty_space.xml')
         mujoco_arena.merge(xml)
-        #mujoco_arena = SpaceArena()
 
         super()._load_model()
 
