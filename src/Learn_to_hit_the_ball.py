@@ -24,12 +24,12 @@ on_screen_render = False
 matplotlib_display = True and not on_screen_render
 
 algo = 'RecurrentPPO'
-inputs = 'low-d'  # high-d or low-d
+inputs = 'high-d'  # high-d or low-d
 num_env = 24
 control_freq = 15
 horizon = 64
 video_period = 10
-video_dim = 84 # For both height and width; 84 is default
+video_dim = 120 # For both height and width; 84 is default
 target_growth_param = (0.20, 0.6, 35000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
@@ -53,7 +53,7 @@ def make_env():
         camera_heights = video_dim,  # 84 was default, but our ball is small and hard to see
         camera_widths = video_dim,
         camera_depths = True,   # True if you want RGB-D cameras
-        camera_color = False,
+        camera_color = True,
         # There are more optional args, but I didn't think them relevant.
     )
 
