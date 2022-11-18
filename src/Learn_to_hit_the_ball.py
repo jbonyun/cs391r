@@ -30,6 +30,8 @@ control_freq = 15
 horizon = 64
 video_period = 10
 video_dim = 84 # For both height and width; 84 is default
+target_growth_param = None #(0.2, 0.5, 20000)
+shrink_ball_param = (0.02, 0.10, 20000)
 
 def make_env():
     return HitBallEnv(
@@ -174,8 +176,8 @@ class VarianceScheduler(BaseCallback):
         if self.num_timesteps >= self.steps_next_escal:
             self.steps_next_escal = self.num_timesteps + self.eps_per_escal * self.ep_len
             num_eps = self.num_timesteps / self.ep_len
-            #venv.env_method('grow_variance', num_eps)
-            venv.env_method('shrink_ball', num_eps)
+            venv.env_method('grow_target_radius', num_eps, target_growth_param)
+            venv.env_method('shrink_ball', num_eps, shrink_ball_param)
     def _on_step(self):
         pass
 
