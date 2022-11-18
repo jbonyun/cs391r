@@ -178,7 +178,7 @@ class HitBallEnv(SingleArmEnv):
         np.random.seed()
         random.seed()
 
-        self.ball_radius = 0.20   # in meters; radius not diameter; ping pong is 0.02
+        self.ball_radius = 0.10   # in meters; radius not diameter; ping pong is 0.02
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -191,8 +191,8 @@ class HitBallEnv(SingleArmEnv):
         self.placement_initializer = placement_initializer
 
         self.spawner = BallSpawner()
-        ball_spawn_type = 'one'   # full, one, two
-        TARGET_RADIUS = 0.0
+        ball_spawn_type = 'center'   # full, one, two, center
+        TARGET_RADIUS = 0.1
         if ball_spawn_type == 'full':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.5, 0.5, 0.5)
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
@@ -200,6 +200,10 @@ class HitBallEnv(SingleArmEnv):
         elif ball_spawn_type == 'one':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
+            self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
+        elif ball_spawn_type == 'center':
+            self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
+            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
         elif ball_spawn_type == 'two':
             self.spawner.src = BoxInSpace([2.5, 0, 0], None, 0.0, 0.0, 0.0)  # No randomness
