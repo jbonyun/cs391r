@@ -246,23 +246,24 @@ class HitBallEnv(SingleArmEnv):
         self.format_spaces()
         self.metadata = {'render.modes': ['human']}
 
-    def grow_variance(self, num_eps):
-        grow_rate = 1. + 1. / (num_eps)**0.7
+    def grow_target_radius(self, num_eps, param_set):
+        if param_set is None: return
+        # Example: param_set = (0.1, 0.4, 20000)
+        min_radius, max_radius, halflife_eps = param_set
+        new_val = max_radius - (max_radius - min_radius) * 0.5**(float(num_eps) / float(halflife_eps))
+        print('Growing radius of target to', new_val)
         if isinstance(self.spawner.tgt, OneOfN):
-            print('Growing variance of target at', grow_rate)
             for n in self.spawner.tgt.things:
-                n.radius *= grow_rate
+                n.radius = new_val
         elif isinstance(self.spawner.tgt, CircleInSpace):
-            print('Growing variance of target at', grow_rate)
-            self.spawner.tgt.radius *= grow_rate
+            self.spawner.tgt.radius = new_val
         else:
             print('Dont know how to grow variance')
-    def shrink_ball(self, num_eps):
-        #self.ball_radius = self.ball_radius   # NOP, as example
-        MIN_SIZE = 0.02 #0.02
-        MAX_SIZE = 0.10
-        HALFLIFE_EPS = 20000
-        self.ball_radius = MIN_SIZE + (MAX_SIZE - MIN_SIZE) * 0.5**(float(num_eps) / float(HALFLIFE_EPS))
+    def shrink_ball(self, num_eps, param_set):
+        if param_set is None: return
+        # Example: param_set = (0.02, 0.10, 20000)
+        min_size, max_size, halflife_eps = param_set
+        self.ball_radius = min_size + (max_size - min_size) * 0.5**(float(num_eps) / float(halflife_eps))
         print('Ball radius set to', self.ball_radius)
 
     def format_observation(self, state):
