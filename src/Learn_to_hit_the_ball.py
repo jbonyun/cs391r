@@ -30,7 +30,7 @@ control_freq = 15
 horizon = 64
 video_period = 10
 video_dim = 84 # For both height and width; 84 is default
-target_growth_param = (0.1, 0.6, 30000)
+target_growth_param = (0.20, 0.6, 35000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
 def make_env():
