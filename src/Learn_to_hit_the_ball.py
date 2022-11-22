@@ -96,26 +96,28 @@ class RewardPrintCallback(BaseCallback):
     def __init__(self, episode_len_steps, history_len_episodes, num_envs, log_fname=None, log_ep=None):
         super().__init__()
         self.d = collections.deque([], int(np.ceil(history_len_episodes * episode_len_steps / num_envs)))
+        self.s = collections.deque([], int(np.ceil(history_len_episodes / num_envs)))
         self.ep_len = episode_len_steps
         self.num_envs = num_envs
         self.log_filename = log_fname
         self.log_ep = log_ep
     def _on_step(self):
         self.d.append(self.locals['rewards'])
-        if (self.num_timesteps / self.num_envs) % self.ep_len == 0:
-            all_data = np.vstack(self.d)
-            mean = np.mean(all_data) * self.ep_len  # across both dimensions
-            num_ep = np.product(all_data.shape) / self.ep_len
-            print('Mean reward over {:d} episodes: {:.4}'.format(int(num_ep), mean))
-        if (self.num_timesteps / self.num_envs) % self.log_ep == 0:
-            all_data = np.vstack(self.d)
-            mean = np.mean(all_data) * self.ep_len  # across both dimensions
-            num_ep = np.product(all_data.shape) / self.ep_len
+        return True
+    def on_rollout_end(self):
+        s_row = [self.locals['infos'][i]['success'] for i in range(self.num_envs)]
+        self.s.append(s_row)
+        all_d = np.vstack(self.d)
+        mean_d = np.mean(all_d) * self.ep_len  # across both dimensions
+        num_ep = np.product(all_d.shape) / self.ep_len
+        all_s = np.vstack(self.s)
+        mean_s = np.mean(all_s)
+        print('Mean reward over {:d} episodes: {:.4}   success: {:.2f}%'.format(int(num_ep), mean_d, mean_s*100))
+        if num_ep % self.log_ep == 0:
             print('Updating reward log')
             with open(self.log_filename, 'a') as f:
-                f.write('{},{},{}\n'.format(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'), self.num_timesteps, mean))
-            print('Mean reward over {:d} episodes: {:.4}'.format(int(num_ep), mean))
-        return True
+                f.write('{},{},{:.7f},{:.7f}\n'.format(datetime.now().strftime('%Y-%m-%d-%H:%M:%S'), self.num_timesteps, mean_d, mean_s))
+        super()._on_rollout_end()
     def set_log_on_n_episodes(self, fname, n_ep):
         self.log_filename = fname
         self.log_ep = n_ep

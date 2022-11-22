@@ -345,6 +345,7 @@ class HitBallEnv(SingleArmEnv):
             else:
                 # Render it pretty
                 info['observer'] = np.flipud(self.sim.render(height=512, width=1024, camera_name=self.record_observer))
+        info['success'] = self.has_collided
         return fmt_obs, reward, done, info
 
     def reset(self):
