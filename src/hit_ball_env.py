@@ -253,7 +253,7 @@ class HitBallEnv(SingleArmEnv):
         # Example: param_set = (0.1, 0.4, 20000)
         min_radius, max_radius, halflife_eps = param_set
         new_val = max_radius - (max_radius - min_radius) * 0.5**(float(num_eps) / float(halflife_eps))
-        print('Growing radius of target to', new_val)
+        print('Growing radius of target to {:.5f}'.format(new_val))
         if isinstance(self.spawner.tgt, OneOfN):
             for n in self.spawner.tgt.things:
                 n.radius = new_val
@@ -266,7 +266,7 @@ class HitBallEnv(SingleArmEnv):
         # Example: param_set = (0.02, 0.10, 20000)
         min_size, max_size, halflife_eps = param_set
         self.ball_radius = min_size + (max_size - min_size) * 0.5**(float(num_eps) / float(halflife_eps))
-        print('Ball radius set to', self.ball_radius)
+        print('Ball radius set to {:.5f}'.format(self.ball_radius))
 
     def format_observation(self, state):
         # if no camera, do nothing
