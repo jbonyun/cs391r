@@ -109,10 +109,11 @@ class RewardPrintCallback(BaseCallback):
         self.s.append(s_row)
         all_d = np.vstack(self.d)
         mean_d = np.mean(all_d) * self.ep_len  # across both dimensions
-        num_ep = np.product(all_d.shape) / self.ep_len
+        num_ep_saved = np.product(all_d.shape) / self.ep_len
         all_s = np.vstack(self.s)
         mean_s = np.mean(all_s)
-        print('Mean reward over {:d} episodes: {:.4}   success: {:.2f}%'.format(int(num_ep), mean_d, mean_s*100))
+        print('Mean reward over {:d} episodes: {:.4}   success: {:.2f}%'.format(int(num_ep_saved), mean_d, mean_s*100))
+        num_ep = self.num_timesteps / self.ep_len
         if num_ep % self.log_ep == 0:
             print('Updating reward log')
             with open(self.log_filename, 'a') as f:
