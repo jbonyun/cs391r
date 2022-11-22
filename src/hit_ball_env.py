@@ -335,16 +335,16 @@ class HitBallEnv(SingleArmEnv):
                 # Special case where we will render it exactly as seen by algo
                 obs_im = fmt_obs['image']
                 if obs_im.shape[2] == 1:
-                    info = {'observer': np.flipud(obs_im)}
+                    info['observer'] = np.flipud(obs_im)
                 elif obs_im.shape[2] == 2:
-                    info = {'observer': np.concatenate((np.flipud(obs_im[:,:,0]), np.flipud(obs_im[:,:,-1])), axis=0)}
+                    info['observer'] = np.concatenate((np.flipud(obs_im[:,:,0]), np.flipud(obs_im[:,:,-1])), axis=0)
                 elif obs_im.shape[2] == 3:
-                    info = {'observer': np.flipud(obs_im)}
+                    info['observer'] = np.flipud(obs_im)
                 elif obs_im.shape[2] == 4:
-                    info = {'observer': np.concatenate((np.flipud(obs_im[:,:,0:3]), np.tile(np.expand_dims(np.flipud(obs_im[:,:,-1]), axis=2),(1,1,3))), axis=0)}
+                    info['observer'] = np.concatenate((np.flipud(obs_im[:,:,0:3]), np.tile(np.expand_dims(np.flipud(obs_im[:,:,-1]), axis=2),(1,1,3))), axis=0)
             else:
                 # Render it pretty
-                info = {'observer': np.flipud(self.sim.render(height=512, width=1024, camera_name=self.record_observer))}
+                info['observer'] = np.flipud(self.sim.render(height=512, width=1024, camera_name=self.record_observer))
         return fmt_obs, reward, done, info
 
     def reset(self):
