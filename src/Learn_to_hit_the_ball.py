@@ -7,6 +7,7 @@ import ipdb
 import math
 import numpy as np
 import sys
+import os
 
 from stable_baselines3 import PPO
 from sb3_contrib import RecurrentPPO
@@ -68,10 +69,10 @@ class SaveAfterEpisodeCallback(BaseCallback):
     def on_rollout_end(self):
         if self.rollouts_per_bigsave is not None and self.num_timesteps % (self.ep_len*self.num_envs*self.rollouts_per_bigsave) == 0:
             print('BIGSAVE')
-            self.model.save('save_checkpoint_{}.model'.format(self.num_timesteps))
+            self.model.save(os.path.join(OUT_DIR,'save_checkpoint_{}.model').format(self.num_timesteps))
         if self.num_timesteps % (self.ep_len*self.num_envs*self.rollouts_per_save) == 0:
             print('Episode+Rollout end +Save')
-            self.model.save('save_checkpoint.model')
+            self.model.save(os.path.join(OUT_DIR,'save_checkpoint.model'))
             print('Checkpoint saved')
         elif self.num_timesteps % horizon == 0:
             print('Episode+Rollout end')
@@ -192,9 +193,11 @@ if __name__ == '__main__':
     else:
         venv = DummyVecEnv([make_env]*1)
 
+    # Where to save? Default current directory.
+    OUT_DIR = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] != 'None' else ''
 
     # Prepare agent
-    load_filename = sys.argv[1] if len(sys.argv) > 1 else None
+    load_filename = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != 'None' else None
 
     if inputs == 'high-d':
         # Override default network for something that preserves location
@@ -222,8 +225,8 @@ if __name__ == '__main__':
     print(agent.policy)
 
     # Prepare callbacks
-    vid = MakeVideoCallback('rollout_{}.mp4', 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
-    rew = RewardPrintCallback(horizon, num_env*25, num_env, 'reward.log', num_env*4)
+    vid = MakeVideoCallback(os.path.join(OUT_DIR,'rollout_{}.mp4'), 'followrobot', venv, fps=control_freq, num_envs=num_env, rollout_period=video_period)
+    rew = RewardPrintCallback(horizon, num_env*25, num_env, os.path.join(OUT_DIR,'reward.log'), num_env*4)
     varsched = VarianceScheduler(venv, horizon, 64)
     savemod = SaveAfterEpisodeCallback(horizon,num_env,3,100)
     callbacks = [savemod, rew, vid, varsched]
