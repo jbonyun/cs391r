@@ -483,7 +483,7 @@ class HitBallEnv(SingleArmEnv):
             self.placement_initializer = DeterministicSampler(
                 name="BallSampler",
                 mujoco_objects=self.ball,
-                ensure_valid_placement=True,
+                ensure_valid_placement=False,
                 reference_pos=self.ball.trajectory.origin  # Center around the spawner's chosen place
             )
 
