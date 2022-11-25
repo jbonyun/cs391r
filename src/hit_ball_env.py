@@ -176,7 +176,7 @@ class HitBallEnv(SingleArmEnv):
         np.random.seed()
         random.seed()
 
-        self.ball_radius = 0.10   # in meters; radius not diameter; ping pong is 0.02
+        self.ball_radius = 0.02   # in meters; radius not diameter; ping pong is 0.02
 
         # reward configuration
         self.reward_scale = reward_scale
@@ -200,9 +200,9 @@ class HitBallEnv(SingleArmEnv):
             self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
         elif ball_spawn_type == 'center':
-            self.spawner.src = BoxInSpace([2.5, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
-            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
-            self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
+            self.spawner.src = BoxInSpace([2.5, 0, 0.4], None, 0.0, 0.0, 0.0)  # No randomness
+            self.spawner.tgt = CircleInSpace((0,0,3.0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
+            self.spawner.spd = SpeedSpawner(5.5, 5.5)  # No randomness
         elif ball_spawn_type == 'two':
             self.spawner.src = BoxInSpace([2.5, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = OneOfN([
@@ -422,7 +422,7 @@ class HitBallEnv(SingleArmEnv):
         # Proximity to the ball
         # Was from the stacking task; scale 0.25 to 20
         prox_dist_scale = 2.0 #10.0  # Seems to be in meters, higher means sharper tanh slope
-        prox_mult_scale = 0.005 #0.25
+        prox_mult_scale = 0.02 #0.25
         dist = np.linalg.norm(gripper_site_pos - ball_pos)
         r_prox = (1 - np.tanh(prox_dist_scale * dist)) * prox_mult_scale
 
@@ -466,7 +466,7 @@ class HitBallEnv(SingleArmEnv):
         """
         mujoco_arena = MujocoWorldBase()
         from robosuite.models.base import MujocoXML
-        xml = MujocoXML('empty_space.xml')
+        xml = MujocoXML('empty_arena.xml')
         mujoco_arena.merge(xml)
 
         super()._load_model()
@@ -495,9 +495,9 @@ class HitBallEnv(SingleArmEnv):
 
         # Tweak it in ways that can't be done before the merging done in Task class.
         # Disable gravity by setting it to zero acceleration in x/y/z
-        self.model.root.find('option').attrib['gravity'] = '0 0 0'
-        self.model.root.find('option').attrib['density'] = '0'
-        self.model.root.find('option').attrib['viscosity'] = '0'
+        #self.model.root.find('option').attrib['gravity'] = '0 0 0'
+        #self.model.root.find('option').attrib['density'] = '0'
+        #self.model.root.find('option').attrib['viscosity'] = '0'
         self.model.actuator.append(self.ball.create_shooter())
         # Add a focal point for the camera
         site_el = Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
