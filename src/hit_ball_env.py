@@ -202,7 +202,7 @@ class HitBallEnv(SingleArmEnv):
         elif ball_spawn_type == 'center':
             self.spawner.src = BoxInSpace([2.9, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
-            self.spawner.spd = SpeedSpawner(3.0, 3.0)  # No randomness
+            self.spawner.spd = SpeedSpawner(1.5, 1.5)  # No randomness
         elif ball_spawn_type == 'two':
             self.spawner.src = BoxInSpace([2.5, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = OneOfN([
