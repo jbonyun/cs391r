@@ -13,6 +13,7 @@ from stable_baselines3 import PPO
 from sb3_contrib import RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from stable_baselines3.common.vec_env import SubprocVecEnv, DummyVecEnv, VecFrameStack
+import torch as th
 
 from hit_ball_env import HitBallEnv
 from custom_extractors import CombinedExtractorDilatedCNN
@@ -202,6 +203,8 @@ if __name__ == '__main__':
     if inputs == 'high-d':
         # Override default network for something that preserves location
         policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
+        policy_kwargs['activation_fn'] = th.nn.ReLU
+        policy_kwargs['net_arch'] = [512, 256, dict(pi=[128, 64], vf=[128,64])]
     elif inputs == 'low-d':
         policy_kwargs = {}
     else:
