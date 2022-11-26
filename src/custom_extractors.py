@@ -40,7 +40,7 @@ class LocationPreservingCNN(BaseFeaturesExtractor):
 
 # This started as a clone of sb3 CombinedExtractor. We have modified it to use a different CNN.
 class CombinedExtractorDilatedCNN(BaseFeaturesExtractor):
-    def __init__(self, observation_space, cnn_output_dim: int = 256):
+    def __init__(self, observation_space, cnn_output_dim: int = 1024):
         super().__init__(observation_space, features_dim=1)
 
         extractors = {}
