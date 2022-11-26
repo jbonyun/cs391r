@@ -12,7 +12,7 @@ class PingPongBall(BallObject):
         self.radius = radius
         super().__init__(
             name='ball{}'.format(self.name_suffix),
-            size=[radius],
+            size=[self.radius],
             rgba=[0, 0.5, 0.5, 1],
             solref=[-10000., -7.],  # set bouncyness as negative numbers. first is stiffness, second is damping.
             density=self.density(),
@@ -25,15 +25,21 @@ class PingPongBall(BallObject):
     def volume(self):
         """Volume of the ball, m^3"""
         return self.radius**3 * math.pi * 4./3.
+    def surface(self):
+        return self.radius**2 * math.pi * 4.
+    def mass(self):
+        #return PingPongBall.MASS
+        mass_per_surface = PingPongBall.MASS / (0.02**2 * math.pi * 4.)
+        return mass_per_surface * self.surface()
     def density(self):
         """Density of the ball, kg/m^3"""
-        return PingPongBall.MASS / self.volume()
+        return self.mass() / self.volume()
     def create_shooter(self):
         # Needs to be appended to the world's actuators list
         return ET.Element('general', attrib={'name': 'ball{}_shooter'.format(self.name_suffix), 'joint': 'ball{}_joint0'.format(self.name_suffix), 'gear': array_to_string(self.trajectory.velocity_vector) + ' 0 0 0'})
     def shooter_force(self):
         """How hard (in Newtons) the initial force must push for one frame time to instill initial velocity."""
-        return self.trajectory.speed * PingPongBall.MASS / self.timestep
+        return self.trajectory.speed * self.mass() / self.timestep
     def set_shooter_control(self, sim, set_to=None):
         """Apply the shooter_force to the actuator that will push this ball"""
         if self.actuator_id is None:
