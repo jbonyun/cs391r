@@ -30,7 +30,7 @@ num_env = 24
 control_freq = 30
 horizon = 64
 video_period = 10
-video_dim = 120 # For both height and width; 84 is default
+video_dim = 240 # For both height and width; 84 is default
 target_growth_param = (0.10, 0.50, 50000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
