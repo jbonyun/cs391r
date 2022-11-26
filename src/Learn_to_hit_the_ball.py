@@ -27,12 +27,12 @@ matplotlib_display = True and not on_screen_render
 
 algo = 'RecurrentPPO'
 inputs = 'high-d'  # high-d or low-d
-num_env = 24
+num_env = 12
 control_freq = 20
 horizon = 64
 video_period = 10
 video_dim = 240 # For both height and width; 84 is default
-target_growth_param = (0.10, 0.50, 50000)
+target_growth_param = (0.23, 0.50, 40000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
 def make_env():
