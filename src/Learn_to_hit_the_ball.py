@@ -25,14 +25,14 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
-algo = 'RecurrentPPO'
+algo = 'PPO'
 inputs = 'high-d'  # high-d or low-d
 num_env = 12
 control_freq = 20
 horizon = 64
 video_period = 10
 video_dim = 240 # For both height and width; 84 is default
-target_growth_param = (0.23, 0.50, 40000)
+target_growth_param = (0.22, 0.50, 40000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
 def make_env():
