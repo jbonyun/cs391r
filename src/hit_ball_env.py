@@ -200,9 +200,9 @@ class HitBallEnv(SingleArmEnv):
             self.spawner.tgt = CircleInSpace((0,-0.5,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
             self.spawner.spd = SpeedSpawner(0.7, 0.7)  # No randomness
         elif ball_spawn_type == 'center':
-            self.spawner.src = BoxInSpace([2.9, 0, 0.4], None, 0.0, 0.0, 0.0)  # No randomness
-            self.spawner.tgt = CircleInSpace((0,0,2.2), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
-            self.spawner.spd = SpeedSpawner(6.1, 6.1)  # No randomness
+            self.spawner.src = BoxInSpace([2.9, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
+            self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, TARGET_RADIUS)
+            self.spawner.spd = SpeedSpawner(3.0, 3.0)  # No randomness
         elif ball_spawn_type == 'two':
             self.spawner.src = BoxInSpace([2.5, 0, 0.2], None, 0.0, 0.0, 0.0)  # No randomness
             self.spawner.tgt = OneOfN([
@@ -466,7 +466,7 @@ class HitBallEnv(SingleArmEnv):
         """
         mujoco_arena = MujocoWorldBase()
         from robosuite.models.base import MujocoXML
-        xml = MujocoXML('empty_arena.xml')
+        xml = MujocoXML('empty_space.xml')
         mujoco_arena.merge(xml)
 
         super()._load_model()
@@ -495,9 +495,9 @@ class HitBallEnv(SingleArmEnv):
 
         # Tweak it in ways that can't be done before the merging done in Task class.
         # Disable gravity by setting it to zero acceleration in x/y/z
-        #self.model.root.find('option').attrib['gravity'] = '0 0 0'
-        #self.model.root.find('option').attrib['density'] = '0'
-        #self.model.root.find('option').attrib['viscosity'] = '0'
+        self.model.root.find('option').attrib['gravity'] = '0 0 0'
+        self.model.root.find('option').attrib['density'] = '0'
+        self.model.root.find('option').attrib['viscosity'] = '0'
         self.model.actuator.append(self.ball.create_shooter())
         # Add a focal point for the camera
         site_el = Element('body', attrib={'name':'observertarget', 'pos': '0.5 0 0.5'})
