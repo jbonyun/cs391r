@@ -25,7 +25,7 @@ on_screen_render = False
 matplotlib_display = True and not on_screen_render
 
 algo = 'PPO'
-inputs = 'low-d'  # high-d or low-d
+inputs = 'high-d'  # high-d or low-d
 num_env = 24
 control_freq = 30
 horizon = 64
