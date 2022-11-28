@@ -17,13 +17,11 @@ class LocationPreservingCNN(BaseFeaturesExtractor):
         assert is_image_space(observation_space, check_channels=False), ("Intended for images only!")
         n_input_channels = observation_space.shape[0]
         self.cnn = nn.Sequential(
-            nn.Conv2d(n_input_channels, 32, kernel_size=5, stride=1, padding=0, dilation=1),
+            nn.Conv2d(n_input_channels, 32, kernel_size=7, stride=1, padding=0, dilation=2),
             nn.ReLU(),
             nn.Conv2d(32, 64, kernel_size=5, stride=2, padding=0, dilation=1),
             nn.ReLU(),
-            nn.Conv2d(64, 64, kernel_size=5, stride=2, padding=0, dilation=1),
-            nn.ReLU(),
-            nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=0, dilation=1),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=0, dilation=1),
             nn.ReLU(),
             nn.Flatten(),
         )
@@ -40,7 +38,7 @@ class LocationPreservingCNN(BaseFeaturesExtractor):
 
 # This started as a clone of sb3 CombinedExtractor. We have modified it to use a different CNN.
 class CombinedExtractorDilatedCNN(BaseFeaturesExtractor):
-    def __init__(self, observation_space, cnn_output_dim: int = 1024):
+    def __init__(self, observation_space, cnn_output_dim: int = 256):
         super().__init__(observation_space, features_dim=1)
 
         extractors = {}

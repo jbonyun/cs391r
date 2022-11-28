@@ -28,11 +28,11 @@ matplotlib_display = True and not on_screen_render
 algo = 'PPO'
 inputs = 'high-d'  # high-d or low-d
 num_env = 12
-control_freq = 20
+control_freq = 15
 horizon = 64
 video_period = 10
-video_dim = 240 # For both height and width; 84 is default
-target_growth_param = (0.22, 0.50, 40000)
+video_dim = 120 # For both height and width; 84 is default
+target_growth_param = (0.20, 0.6, 35000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
 def make_env():
@@ -203,11 +203,6 @@ if __name__ == '__main__':
     if inputs == 'high-d':
         # Override default network for something that preserves location
         policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
-        policy_kwargs['activation_fn'] = th.nn.ReLU
-        policy_kwargs['net_arch'] = [512, 256, dict(pi=[128, 64], vf=[128,64])]
-        policy_kwargs['lstm_hidden_size'] = 512
-        policy_kwargs['enable_critic_lstm'] = False
-        policy_kwargs['shared_lstm'] = True
     elif inputs == 'low-d':
         policy_kwargs = {}
     else:
