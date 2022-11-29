@@ -27,12 +27,12 @@ matplotlib_display = True and not on_screen_render
 
 algo = 'PPO'
 inputs = 'high-d'  # high-d or low-d
-num_env = 12
+num_env = 4
 control_freq = 15
 horizon = 64
 video_period = 10
 video_dim = 120 # For both height and width; 84 is default
-target_growth_param = (0.20, 0.6, 35000)
+target_growth_param = None #(0.20, 0.6, 35000)
 shrink_ball_param = None #(0.02, 0.10, 20000)
 
 def make_env():
@@ -235,7 +235,8 @@ if __name__ == '__main__':
     # learn
     expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
     approx_seconds_to_run = 60*60*24
-    steps_to_run = expected_fps * approx_seconds_to_run
+    #steps_to_run = expected_fps * approx_seconds_to_run
+    steps_to_run = 750000
 
     agent.learn(steps_to_run, callback=CallbackList(callbacks))
 
