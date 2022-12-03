@@ -39,7 +39,7 @@ def make_env():
     return HitBallEnv(
         robots = ['IIWA'],
         env_configuration = ['default'],    # positions
-        controller_configs = {'type':'OSC_POSE', 'interpolation': 'linear', 'ramp_ratio':0.6 },
+        controller_configs = {'type':'JOINT_VELOCITY', 'interpolation': 'linear', 'ramp_ratio':0.6 },
         gripper_types = ['BatOneGripper'],
         use_camera_obs = (inputs == 'high-d'),  # True means controller will be given camera inputs
         use_object_obs = (inputs == 'low-d'),  # True means use the low-d loc of ball and gripper
