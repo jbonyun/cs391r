@@ -204,7 +204,7 @@ if __name__ == '__main__':
         # Override default network for something that preserves location
         policy_kwargs = dict(features_extractor_class=CombinedExtractorDilatedCNN)
         policy_kwargs['activation_fn'] = th.nn.ReLU
-        policy_kwargs['net_arch'] = [512, 256, dict(pi=[128, 64], vf=[128,64])]
+        policy_kwargs['net_arch'] = [512, 256, dict(pi=[128, 64, 32], vf=[128, 64, 32])]
         if algo == 'RecurrentPPO':
             policy_kwargs['lstm_hidden_size'] = 512
             policy_kwargs['enable_critic_lstm'] = False
