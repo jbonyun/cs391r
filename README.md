@@ -9,3 +9,7 @@ The MDP is based on robosuite, and provides either a low dimensional or high dim
 See below for numerous examples of trained policies. 
 
 https://user-images.githubusercontent.com/59975096/160890285-ab331624-75c2-4372-a6a8-626dfb4677bc.mp4
+
+
+https://user-images.githubusercontent.com/105821676/205504180-f731c2cc-93e7-4782-ab6f-b93f51c23aea.mp4
+
