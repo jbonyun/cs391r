@@ -12,6 +12,10 @@ See below for numerous examples of trained policies.
 
 https://user-images.githubusercontent.com/105821676/205504180-f731c2cc-93e7-4782-ab6f-b93f51c23aea.mp4
 
+## View Of Agent
+
+https://user-images.githubusercontent.com/51039597/205505325-29bbc8c5-014f-4ee8-be55-c25c52549130.mp4
+
 ## Our Best Agent in Realistic Arena
 
 https://user-images.githubusercontent.com/51039597/205504671-ebed5492-d878-4f73-aa93-0f21f42874f3.mp4
