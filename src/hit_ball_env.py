@@ -302,7 +302,7 @@ class HitBallEnv(SingleArmEnv):
         }
 
     def format_spaces(self):
-        self.action_space = Box(low=-1., high=1., shape=(7,), dtype=np.float32)
+        self.action_space = Box(low=-1., high=1., shape=(6,), dtype=np.float32)
 
         if self.use_camera_obs:
             num_channels = 3 if self.camera_color else 1
@@ -313,7 +313,7 @@ class HitBallEnv(SingleArmEnv):
             })
         elif self.use_object_obs:
             self.observation_space =  spaces.Dict({
-                "objects": Box(low=-1., high=1., shape=(7,), dtype=np.float32),
+                "objects": Box(low=-1., high=1., shape=(6,), dtype=np.float32),
                 "joints": Box(low=-1., high=1., shape=(28,), dtype=np.float32)
             })
 
