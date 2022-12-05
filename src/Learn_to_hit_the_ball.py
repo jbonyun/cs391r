@@ -239,8 +239,8 @@ if __name__ == '__main__':
     callbacks = [savemod, rew, vid, varsched]
 
     # learn
-    expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
-    approx_seconds_to_run = 60*60*24
+    #expected_fps = {1:50, 2:60, 3:65, 4:80, 5:100, 6: 105, 24:225, 36:225}.get(num_env, 105)
+    #approx_seconds_to_run = 60*60*24
     #steps_to_run = expected_fps * approx_seconds_to_run
     steps_to_run = 750000
 
