@@ -24,7 +24,7 @@ on_screen_render = False
 # If you aren't rendering on screen, do you want to see what the robot sees? It's slow...
 matplotlib_display = True and not on_screen_render
 
-algo = 'RecurrentPPO'
+algo = 'PPO'
 inputs = 'high-d'  # high-d or low-d
 num_env = 4
 control_freq = 15
