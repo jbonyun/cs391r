@@ -190,7 +190,7 @@ class HitBallEnv(SingleArmEnv):
 
         self.spawner = BallSpawner()
         ball_spawn_type = 'center'   # full, one, two, center
-        TARGET_RADIUS = 0.1
+        TARGET_RADIUS = 0.40
         if ball_spawn_type == 'full':
             self.spawner.src = BoxInSpace([2.5, 0, 0.2], None, 0.5, 0.5, 0.5)
             self.spawner.tgt = CircleInSpace((0,0,0), (1,0,0), (0,1,0), 1.*math.pi, 0.8)
